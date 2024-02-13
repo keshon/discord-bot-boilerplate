@@ -1,0 +1,7 @@
+/.VSCodeCounter
+
+*.db
+.env
+*.upx
+logs/*
+/*.exe

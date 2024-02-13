@@ -1,0 +1,19 @@
+version: '3.3'
+services:
+  app:
+    container_name: ${ALIAS}
+    restart: always
+    image: '${ALIAS}-image'
+    volumes:
+      - ./data/avatars:/usr/project/assets/avatars
+      - ./data/dice-roller.sqlite3:/usr/project/dice-roller.db
+      - ./data/all-levels.log:/usr/project/logs/all-levels.log
+    environment:
+      - HOST    
+      - DISCORD_COMMAND_PREFIX
+      - DISCORD_BOT_TOKEN
+      - REST_ENABLED
+      - REST_GIN_RELEASE
+      - REST_HOSTNAME
+
+    entrypoint: /usr/project/app
