@@ -19,9 +19,27 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
 )
 
-var botInstances map[string]*discord.BotInstance
-
 func main() {
+	initLogger()
+
+	config := initConfig()
+
+	initDatabase()
+
+	dg := initDiscordSession(config.DiscordBotToken)
+
+	bots := initBots(dg)
+
+	handleDiscordSession(dg)
+
+	startRestServer(config, bots)
+
+	slog.Infof("%v is now running. Press Ctrl+C to exit", version.AppName)
+
+	waitForExitSignal()
+}
+
+func initLogger() {
 	slog.Configure(func(logger *slog.SugaredLogger) {
 		f := logger.Formatter.(*slog.TextFormatter)
 		f.EnableColor = true
@@ -31,103 +49,110 @@ func main() {
 
 	h1 := handler.MustFileHandler("./logs/all-levels.log", handler.WithLogLevels(slog.AllLevels))
 	slog.PushHandler(h1)
+}
 
-	// logger := slog.Std()
-
-	config, err := config.NewConfig()
+func initConfig() *config.Config {
+	cfg, err := config.NewConfig()
 	if err != nil {
-		slog.Fatalf("Error loading config: %v", err)
-		os.Exit(0)
+		slog.Fatal("Error loading config", err)
+		os.Exit(1)
 	}
+	slog.Info("Config loaded:\n" + cfg.String())
+	return cfg
+}
 
-	slog.Info("Config loaded:\n" + config.String())
-
-	if _, err := db.InitDB("./dbase.db"); err != nil {
-		slog.Fatalf("Error initializing the database: %v", err)
-		os.Exit(0)
-	}
-
-	dg, err := discordgo.New("Bot " + config.DiscordBotToken)
+func initDatabase() {
+	_, err := db.InitDB("./dbase.db")
 	if err != nil {
-		slog.Fatalf("Error creating Discord session: %v", err)
-		os.Exit(0)
+		slog.Fatal("Error initializing the database", err)
+		os.Exit(1)
 	}
+}
 
-	botInstances = make(map[string]*discord.BotInstance)
+func initDiscordSession(token string) *discordgo.Session {
+	dg, err := discordgo.New("Bot " + token)
+	if err != nil {
+		slog.Fatal("Error creating Discord session", err)
+		os.Exit(1)
+	}
+	return dg
+}
 
-	guildManager := manager.NewGuildManager(dg, botInstances)
+func initBots(session *discordgo.Session) map[string]*discord.BotInstance {
+	bots := make(map[string]*discord.BotInstance)
+
+	guildManager := manager.NewGuildManager(session, bots)
 	guildManager.Start()
 
-	guildIDs, err := getGuilds()
+	guildIDs, err := db.GetAllGuildIDs()
 	if err != nil {
-		slog.Fatalf("Error retrieving or creating guilds: %v", err)
-		os.Exit(0)
+		slog.Fatal("Error retrieving or creating guilds", err)
+		os.Exit(1)
 	}
 
 	for _, guildID := range guildIDs {
-		startBotInstances(dg, guildID)
+		bots = startBotInstances(session, guildID, bots)
 	}
 
-	if err := dg.Open(); err != nil {
-		slog.Fatalf("Error opening Discord session: %v", err)
-		os.Exit(0)
+	return bots
+}
+
+func handleDiscordSession(dg *discordgo.Session) {
+	err := dg.Open()
+	if err != nil {
+		slog.Fatal("Error opening Discord session", err)
+		os.Exit(1)
 	}
 	defer dg.Close()
-
-	if config.RestEnabled {
-		startRestServer(config.RestGinRelease, config.RestHostname)
-	}
-
-	slog.Infof("%v is now running. Press Ctrl+C to exit", version.AppName)
-
-	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-	<-sc
 }
 
-func getGuilds() ([]string, error) {
-	guildIDs, err := db.GetAllGuildIDs()
-	if err != nil {
-		return nil, err
-	}
-
-	return guildIDs, nil
-}
-
-func startBotInstances(session *discordgo.Session, guildID string) {
-	botInstances[guildID] = &discord.BotInstance{
+func startBotInstances(session *discordgo.Session, guildID string, bots map[string]*discord.BotInstance) map[string]*discord.BotInstance {
+	bots[guildID] = &discord.BotInstance{
 		ExampleBot: discord.NewDiscord(session, guildID),
 	}
-	botInstances[guildID].ExampleBot.Start(guildID)
+	bots[guildID].ExampleBot.Start(guildID)
+
+	return bots
 }
 
-func startRestServer(isReleaseMode bool, hostname string) {
-	if isReleaseMode {
+func startRestServer(config *config.Config, bots map[string]*discord.BotInstance) {
+	if !config.RestEnabled {
+		return
+	}
+
+	if config.RestGinRelease {
 		gin.SetMode("release")
 	}
 
 	router := gin.Default()
 
-	restAPI := rest.NewRest(botInstances)
+	restAPI := rest.NewRest(bots)
 	restAPI.Start(router)
 
 	go func() {
-		// parse hostname var - if it has port - use it or fallback to 8080
-		host, port, err := net.SplitHostPort(hostname)
+		hostname := config.RestHostname
+
+		if len(hostname) == 0 {
+			hostname = "localhost:8080"
+			slog.Warn("Hostname is empty, setting to default", hostname)
+		}
+
+		_, _, err := net.SplitHostPort(hostname)
 		if err != nil {
-			// If there's an error, assume the entire input is the host (without port)
-			host = hostname
-			port = "8080"
+			slog.Error("Could not detect host and port from sring", hostname)
+			return
 		}
 
-		// If hostname is empty, set it to the default port (8080)
-		if host == "" {
-			host = "localhost"
+		if err := router.Run(hostname); err != nil {
+			slog.Fatal("Error starting REST API server", err)
+			return
 		}
-
-		slog.Infof("REST API server started on %s:%s\n", host, port)
-		if err := router.Run(net.JoinHostPort(host, port)); err != nil {
-			slog.Fatalf("Error starting REST API server: %v", err)
-		}
+		slog.Info("REST API server started on", hostname)
 	}()
+}
+
+func waitForExitSignal() {
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
 }
