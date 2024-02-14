@@ -11,17 +11,17 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 )
 
-type BotInstance struct {
-	ExampleBot *Discord
-}
+// type BotInstance struct {
+// 	ExampleBot *Discord
+// }
 
 type Discord struct {
 	Session              *discordgo.Session
 	GuildID              string
 	IsInstanceActive     bool
-	commandPrefix        string
-	lastChangeAvatarTime time.Time
-	rateLimitDuration    time.Duration
+	CommandPrefix        string
+	LastChangeAvatarTime time.Time
+	RateLimitDuration    time.Duration
 }
 
 // NewDiscord initializes a new Discord object with the given session and guild ID.
@@ -36,8 +36,8 @@ func NewDiscord(session *discordgo.Session, guildID string) *Discord {
 	return &Discord{
 		Session:           session,
 		IsInstanceActive:  true,
-		commandPrefix:     config.DiscordCommandPrefix,
-		rateLimitDuration: time.Minute * 10,
+		CommandPrefix:     config.DiscordCommandPrefix,
+		RateLimitDuration: time.Minute * 10,
 	}
 }
 
@@ -53,11 +53,12 @@ func loadConfig() *config.Config {
 	return cfg
 }
 
-// Start starts the Discord instance for the given guild ID.
+// Start starts the Discord instance for the specified guild ID.
 //
-// Takes a guild ID as a parameter and does not return anything.
+// guildID string
 func (d *Discord) Start(guildID string) {
 	slog.Info("Discord instance started for guild ID", guildID)
+	d.Session.AddHandler(d.Commands)
 	d.GuildID = guildID
 }
 
@@ -73,7 +74,7 @@ func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	command, parameter, err := parseCommand(m.Message.Content, d.commandPrefix)
+	command, parameter, err := parseCommand(m.Message.Content, d.CommandPrefix)
 	if err != nil {
 		return
 	}
@@ -145,7 +146,7 @@ func getCanonicalCommand(alias string, commandAliases [][]string) string {
 //
 // It takes a session as a parameter and does not return anything.
 func (d *Discord) changeAvatar(s *discordgo.Session) {
-	if time.Since(d.lastChangeAvatarTime) < d.rateLimitDuration {
+	if time.Since(d.LastChangeAvatarTime) < d.RateLimitDuration {
 		return
 	}
 
@@ -167,7 +168,7 @@ func (d *Discord) changeAvatar(s *discordgo.Session) {
 		return
 	}
 
-	d.lastChangeAvatarTime = time.Now()
+	d.LastChangeAvatarTime = time.Now()
 }
 
 // findUserVoiceState finds the voice state of the user in the given list of voice states.

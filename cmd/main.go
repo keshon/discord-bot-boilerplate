@@ -11,7 +11,6 @@ import (
 	"github.com/gookit/slog"
 	"github.com/gookit/slog/handler"
 
-	"github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 	example "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
@@ -98,8 +97,8 @@ func createDiscordSession(token string) *discordgo.Session {
 //
 // session: a pointer to a discordgo.Session
 // map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
-func startBots(session *discordgo.Session) map[string]*discord.BotInstance {
-	botInstances := make(map[string]*discord.BotInstance)
+func startBots(session *discordgo.Session) map[string]*example.Discord {
+	botInstances := make(map[string]*example.Discord)
 	guildManager := manager.NewGuildManager(session, botInstances)
 	guildManager.Start()
 	guildIDs, err := db.GetAllGuildIDs()
@@ -108,10 +107,7 @@ func startBots(session *discordgo.Session) map[string]*discord.BotInstance {
 	}
 	for _, guildID := range guildIDs {
 		exampleInstance := example.NewDiscord(session, guildID)
-		botInstances[guildID] = &example.BotInstance{
-			ExampleBot: exampleInstance,
-			// ..add more bots here
-		}
+		botInstances[guildID] = exampleInstance
 		exampleInstance.Start(guildID)
 	}
 	return botInstances
@@ -132,7 +128,7 @@ func handleDiscordSession(discordSession *discordgo.Session) {
 // startRestServer starts the REST server based on the given configuration and bot instances.
 //
 // It takes a config.Config pointer and a map of string to *discord.BotInstance as parameters.
-func startRestServer(config *config.Config, bots map[string]*discord.BotInstance) {
+func startRestServer(config *config.Config, bots map[string]*example.Discord) {
 	if !config.RestEnabled {
 		return
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/slog"
 
 	"github.com/keshon/discord-bot-boilerplate/example-bot/discord"
+	example "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
 )
@@ -18,9 +19,9 @@ var (
 )
 
 type GuildManager struct {
-	Session       *discordgo.Session
-	BotInstances  map[string]*discord.BotInstance
-	commandPrefix string
+	Session             *discordgo.Session
+	ExampleBotInstances map[string]*example.Discord
+	commandPrefix       string
 }
 
 // NewGuildManager creates a new GuildManager with the given discord session and bot instances.
@@ -29,16 +30,16 @@ type GuildManager struct {
 // - session: *discordgo.Session
 // - botInstances: map[string]*discord.BotInstance
 // Return type: *GuildManager
-func NewGuildManager(session *discordgo.Session, botInstances map[string]*discord.BotInstance) *GuildManager {
+func NewGuildManager(session *discordgo.Session, examplebotInstances map[string]*example.Discord) *GuildManager {
 	config, err := config.NewConfig()
 	if err != nil {
 		slog.Fatalf("Error loading config:", err)
 	}
 
 	return &GuildManager{
-		Session:       session,
-		BotInstances:  botInstances,
-		commandPrefix: config.DiscordCommandPrefix,
+		Session:             session,
+		ExampleBotInstances: examplebotInstances,
+		commandPrefix:       config.DiscordCommandPrefix,
 	}
 }
 
@@ -111,7 +112,7 @@ func (gm *GuildManager) handleRegisterCommand(s *discordgo.Session, m *discordgo
 		return
 	}
 
-	gm.setupBotInstance(gm.BotInstances, s, guildID)
+	gm.setupBotInstance(gm.ExampleBotInstances, s, guildID)
 	gm.Session.ChannelMessageSend(channelID, "Guild registered successfully")
 }
 
@@ -154,25 +155,23 @@ func (gm *GuildManager) handleUnregisterCommand(s *discordgo.Session, m *discord
 // - session: a Discord session
 // - guildID: the ID of the guild
 // Return type: none
-func (gm *GuildManager) setupBotInstance(botInstances map[string]*discord.BotInstance, session *discordgo.Session, guildID string) {
-	botInstances[guildID] = &discord.BotInstance{
-		ExampleBot: discord.NewDiscord(session, guildID),
-	}
-	botInstances[guildID].ExampleBot.Start(guildID)
+func (gm *GuildManager) setupBotInstance(exampleBotInstances map[string]*example.Discord, session *discordgo.Session, guildID string) {
+	exampleBotInstances[guildID] = discord.NewDiscord(session, guildID)
+	exampleBotInstances[guildID].Start(guildID)
 }
 
 // removeBotInstance removes the bot instance for the given guild ID.
 //
 // guildID string
 func (gm *GuildManager) removeBotInstance(guildID string) {
-	instance, ok := gm.BotInstances[guildID]
+	instance, ok := gm.ExampleBotInstances[guildID]
 	if !ok {
 		return // Guild instance not found, nothing to do
 	}
 
-	instance.ExampleBot.IsInstanceActive = false
+	instance.IsInstanceActive = false
 
-	delete(gm.BotInstances, guildID)
+	delete(gm.ExampleBotInstances, guildID)
 }
 
 // parseCommand parses the input based on the given pattern and returns the command and parameter.
