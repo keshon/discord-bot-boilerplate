@@ -12,17 +12,21 @@ import (
 )
 
 var (
-	prefix = os.Getenv("COMMAND_PREFIX")
+	commandPrefix = os.Getenv("COMMAND_PREFIX")
 )
 
-// GuildManager manages guild-related functionality.
 type GuildManager struct {
-	Session      *discordgo.Session
-	BotInstances map[string]*discord.BotInstance
-	prefix       string
+	Session       *discordgo.Session
+	BotInstances  map[string]*discord.BotInstance
+	commandPrefix string
 }
 
-// NewGuildManager creates a new instance of GuildManager.
+// NewGuildManager creates a new GuildManager with the given discord session and bot instances.
+//
+// Parameters:
+// - session: *discordgo.Session
+// - botInstances: map[string]*discord.BotInstance
+// Return type: *GuildManager
 func NewGuildManager(session *discordgo.Session, botInstances map[string]*discord.BotInstance) *GuildManager {
 	config, err := config.NewConfig()
 	if err != nil {
@@ -30,28 +34,32 @@ func NewGuildManager(session *discordgo.Session, botInstances map[string]*discor
 	}
 
 	return &GuildManager{
-		Session:      session,
-		BotInstances: botInstances,
-		prefix:       config.DiscordCommandPrefix,
+		Session:       session,
+		BotInstances:  botInstances,
+		commandPrefix: config.DiscordCommandPrefix,
 	}
 }
 
-// Start starts the GuildManager instance.
+// Start starts the GuildManager.
 func (gm *GuildManager) Start() {
 	slog.Info("Guild manager started")
 	gm.Session.AddHandler(gm.Commands)
 }
 
-// Commands handles incoming Discord commands.
+// Commands handles the commands received in a Discord session message.
+//
+// Parameters:
+//   - s: a pointer to the Discord session
+//   - m: a pointer to the Discord message received
 func (gm *GuildManager) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
-	command, _, err := parseCommand(m.Message.Content, gm.prefix)
+	command, _, err := parseCommand(m.Message.Content, gm.commandPrefix)
 	if err != nil {
 		slog.Error(err)
 		return
 	}
 
-	// Check if the command is "roll" or "dice"
-	if command == "example" || command == "help" || command == "about" {
+	switch command {
+	case "example", "help", "about":
 		guildID := m.GuildID
 		exists, err := db.DoesGuildExist(guildID)
 		if err != nil {
@@ -60,7 +68,7 @@ func (gm *GuildManager) Commands(s *discordgo.Session, m *discordgo.MessageCreat
 		}
 
 		if !exists {
-			gm.Session.ChannelMessageSend(m.Message.ChannelID, "Guild must be registered first. Use `"+gm.prefix+"register` command.")
+			gm.Session.ChannelMessageSend(m.Message.ChannelID, "Guild must be registered first. Use `"+gm.commandPrefix+"register` command.")
 			return
 		}
 	}
@@ -70,12 +78,14 @@ func (gm *GuildManager) Commands(s *discordgo.Session, m *discordgo.MessageCreat
 		gm.handleRegisterCommand(s, m)
 	case "unregister":
 		gm.handleUnregisterCommand(s, m)
-	default:
-		// log.Println("Unknown command")
 	}
 }
 
-// handleRegisterCommand handles the registration of a guild.
+// handleRegisterCommand handles the registration command for the GuildManager.
+//
+// Parameters:
+// - s: The discord session.
+// - m: The message create event.
 func (gm *GuildManager) handleRegisterCommand(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channelID := m.Message.ChannelID
 	guildID := m.GuildID
@@ -103,7 +113,12 @@ func (gm *GuildManager) handleRegisterCommand(s *discordgo.Session, m *discordgo
 	gm.Session.ChannelMessageSend(channelID, "Guild registered successfully")
 }
 
-// handleUnregisterCommand handles the unregistration of a guild.
+// handleUnregisterCommand handles the unregister command for the GuildManager.
+//
+// Parameters:
+// - s: the discordgo Session
+// - m: the discordgo MessageCreate
+// Return type: none
 func (gm *GuildManager) handleUnregisterCommand(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channelID := m.Message.ChannelID
 	guildID := m.GuildID
@@ -130,7 +145,13 @@ func (gm *GuildManager) handleUnregisterCommand(s *discordgo.Session, m *discord
 	gm.Session.ChannelMessageSend(channelID, "Guild unregistered successfully")
 }
 
-// setupBotInstance sets up a new BotInstance for a guild.
+// setupBotInstance sets up a bot instance for the given guild.
+//
+// Parameters:
+// - botInstances: a map of bot instances
+// - session: a Discord session
+// - guildID: the ID of the guild
+// Return type: none
 func (gm *GuildManager) setupBotInstance(botInstances map[string]*discord.BotInstance, session *discordgo.Session, guildID string) {
 	botInstances[guildID] = &discord.BotInstance{
 		ExampleBot: discord.NewDiscord(session, guildID),
@@ -138,7 +159,9 @@ func (gm *GuildManager) setupBotInstance(botInstances map[string]*discord.BotIns
 	botInstances[guildID].ExampleBot.Start(guildID)
 }
 
-// removeBotInstance removes a BotInstance for a guild.
+// removeBotInstance removes the bot instance for the given guild ID.
+//
+// guildID string
 func (gm *GuildManager) removeBotInstance(guildID string) {
 	instance, ok := gm.BotInstances[guildID]
 	if !ok {

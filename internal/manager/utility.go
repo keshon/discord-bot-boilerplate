@@ -5,24 +5,24 @@ import (
 	"strings"
 )
 
-// parseCommand parses the command and parameter from the Discord input based on the provided pattern.
+// parseCommand parses the content using the provided pattern.
+//
+// content: the string to be parsed
+// pattern: the pattern to look for at the beginning of the content
+// (string, string, error): the parsed command, parameter, and any error encountered
 func parseCommand(content, pattern string) (string, string, error) {
 	if !strings.HasPrefix(content, pattern) {
 		return "", "", fmt.Errorf("pattern not found")
 	}
 
-	content = content[len(pattern):] // Strip the pattern
+	content = strings.TrimPrefix(content, pattern)
 
-	words := strings.Fields(content) // Split by whitespace, handling multiple spaces
-	if len(words) == 0 {
-		return "", "", fmt.Errorf("no command found")
+	spaceIndex := strings.Index(content, " ")
+	if spaceIndex == -1 {
+		return strings.ToLower(content), "", nil
 	}
 
-	command := strings.ToLower(words[0])
-	parameter := ""
-	if len(words) > 1 {
-		parameter = strings.Join(words[1:], " ")
-		parameter = strings.TrimSpace(parameter)
-	}
+	command := strings.ToLower(content[:spaceIndex])
+	parameter := strings.TrimSpace(content[spaceIndex+1:])
 	return command, parameter, nil
 }

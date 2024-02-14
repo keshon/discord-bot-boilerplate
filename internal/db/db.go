@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -9,14 +11,19 @@ var (
 	DB *gorm.DB
 )
 
+// InitDB initializes the database connection.
+//
+// It takes a database path as a parameter and returns a *gorm.DB and an error.
 func InitDB(databasePath string) (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
-	db.AutoMigrate(&Guild{})
+	err = db.AutoMigrate(&Guild{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to auto migrate tables: %w", err)
+	}
 
-	DB = db
 	return db, nil
 }

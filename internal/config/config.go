@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/gookit/slog"
 	"github.com/joho/godotenv"
 )
 
@@ -18,6 +17,10 @@ type Config struct {
 	RestHostname         string
 }
 
+// NewConfig creates a new Config object and returns it along with any error encountered.
+//
+// No parameters.
+// Returns *Config and error.
 func NewConfig() (*Config, error) {
 	if err := godotenv.Load(); err != nil && !os.IsNotExist(err) {
 		return nil, err
@@ -38,8 +41,11 @@ func NewConfig() (*Config, error) {
 	return config, nil
 }
 
+// String returns the JSON representation of the Config struct.
+//
+// No parameters.
+// Returns a string.
 func (c *Config) String() string {
-	// Create a map for key-value pairs
 	configMap := map[string]interface{}{
 		"DiscordCommandPrefix": c.DiscordCommandPrefix,
 		"DiscordBotToken":      c.DiscordBotToken,
@@ -48,29 +54,23 @@ func (c *Config) String() string {
 		"RestHostname":         c.RestHostname,
 	}
 
-	// Convert the map to a JSON string
 	jsonString, err := json.MarshalIndent(configMap, "", "    ")
 	if err != nil {
-		slog.Error("Error formatting configuration as JSON")
 		return ""
 	}
 
 	return string(jsonString)
 }
 
+// validateMandatoryConfig checks for the presence of mandatory configuration keys in the environment variables and returns an error if any are missing.
+//
+// No parameters.
+// Returns an error.
 func validateMandatoryConfig() error {
-
-	// Define a list of mandatory environment variable keys
-	// Extra overlay to ensure we have all necessary values even if they have default values (e.g. ffmpeg has own)
-	// ignore:
-	// - REST_GIN_RELEASE
-	// - REST_HOSTNAME
-
 	mandatoryKeys := []string{
 		"DISCORD_COMMAND_PREFIX", "DISCORD_BOT_TOKEN", "REST_ENABLED",
 	}
 
-	// Check if any mandatory key is missing
 	for _, key := range mandatoryKeys {
 		if os.Getenv(key) == "" {
 			return errors.New("Missing mandatory configuration: " + key)
@@ -80,42 +80,16 @@ func validateMandatoryConfig() error {
 	return nil
 }
 
-func getenvAsInt(key string) int {
-	val := os.Getenv(key)
-
-	intValue, err := strconv.Atoi(val)
-	if err != nil {
-		slog.Error("Error parsing integer value from env variable")
-		return 0
-	}
-
-	return intValue
-}
-
+// getenvAsBool returns the boolean value of the environment variable specified by the key.
+//
+// It takes a string key as a parameter and returns a boolean value.
 func getenvAsBool(key string) bool {
 	val := os.Getenv(key)
 
 	boolValue, err := strconv.ParseBool(val)
 	if err != nil {
-		slog.Error("Error parsing bool value from env variable")
 		return false
 	}
 
 	return boolValue
-}
-
-func getenvBoolAsInt(key string) int {
-	val := os.Getenv(key)
-
-	boolValue, err := strconv.ParseBool(val)
-	if err != nil {
-		slog.Error("Error parsing bool value from env variable")
-		return 0
-	}
-
-	if boolValue {
-		return 1
-	}
-
-	return 0
 }

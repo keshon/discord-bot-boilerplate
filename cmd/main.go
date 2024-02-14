@@ -12,6 +12,7 @@ import (
 	"github.com/gookit/slog/handler"
 
 	"github.com/keshon/discord-bot-boilerplate/example-bot/discord"
+	exampleDiscord "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
 	"github.com/keshon/discord-bot-boilerplate/internal/manager"
@@ -93,26 +94,27 @@ func createDiscordSession(token string) *discordgo.Session {
 	return session
 }
 
-// startBots creates and starts Discord bots for each guild using the given session.
+// startBots initializes and starts Discord bot instances for each guild using the provided session.
 //
-// session *discordgo.Session
-// map[string]*discord.BotInstance
+// session: a pointer to a discordgo.Session
+// map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
 func startBots(session *discordgo.Session) map[string]*discord.BotInstance {
-	bots := make(map[string]*discord.BotInstance)
-	guildManager := manager.NewGuildManager(session, bots)
+	botInstances := make(map[string]*discord.BotInstance)
+	guildManager := manager.NewGuildManager(session, botInstances)
 	guildManager.Start()
 	guildIDs, err := db.GetAllGuildIDs()
 	if err != nil {
-		slog.Fatal("Error retrieving or creating guilds", err)
+		log.Fatal("Error retrieving or creating guilds", err)
 	}
 	for _, guildID := range guildIDs {
-		instance := discord.NewDiscord(session, guildID)
-		bots[guildID] = &discord.BotInstance{
-			ExampleBot: instance,
+		exampleBotInstance := exampleDiscord.NewDiscord(session, guildID)
+		botInstances[guildID] = &exampleDiscord.BotInstance{
+			ExampleBot: exampleBotInstance,
+			// ..add more bots here
 		}
-		instance.Start(guildID)
+		exampleBotInstance.Start(guildID)
 	}
-	return bots
+	return botInstances
 }
 
 // handleDiscordSession is a Go function that opens a Discord session and handles any errors.
