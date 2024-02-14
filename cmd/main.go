@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/slog"
 	"github.com/gookit/slog/handler"
 
-	example "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
+	example_bot "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
 	"github.com/keshon/discord-bot-boilerplate/internal/manager"
@@ -97,20 +97,24 @@ func createDiscordSession(token string) *discordgo.Session {
 //
 // session: a pointer to a discordgo.Session
 // map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
-func startBots(session *discordgo.Session) map[string]*example.Discord {
-	botInstances := make(map[string]*example.Discord)
-	guildManager := manager.NewGuildManager(session, botInstances)
+func startBots(session *discordgo.Session) map[string]*example_bot.ExampleBot {
+	exampleBots := make(map[string]*example_bot.ExampleBot)
+
+	guildManager := manager.NewGuildManager(session, exampleBots)
 	guildManager.Start()
+
 	guildIDs, err := db.GetAllGuildIDs()
+
 	if err != nil {
 		log.Fatal("Error retrieving or creating guilds", err)
 	}
 	for _, guildID := range guildIDs {
-		exampleInstance := example.NewDiscord(session, guildID)
-		botInstances[guildID] = exampleInstance
-		exampleInstance.Start(guildID)
+		exampleBots[guildID] = &example_bot.ExampleBot{
+			Discord: example_bot.NewDiscord(session, guildID),
+		}
+		exampleBots[guildID].Discord.Start(guildID)
 	}
-	return botInstances
+	return exampleBots
 }
 
 // handleDiscordSession is a Go function that opens a Discord session and handles any errors.
@@ -128,7 +132,7 @@ func handleDiscordSession(discordSession *discordgo.Session) {
 // startRestServer starts the REST server based on the given configuration and bot instances.
 //
 // It takes a config.Config pointer and a map of string to *discord.BotInstance as parameters.
-func startRestServer(config *config.Config, bots map[string]*example.Discord) {
+func startRestServer(config *config.Config, exampleBots map[string]*example_bot.ExampleBot) {
 	if !config.RestEnabled {
 		return
 	}
@@ -136,7 +140,7 @@ func startRestServer(config *config.Config, bots map[string]*example.Discord) {
 		gin.SetMode("release")
 	}
 	router := gin.Default()
-	restAPI := rest.NewRest(bots)
+	restAPI := rest.NewRest(exampleBots)
 	restAPI.Start(router)
 	go func() {
 		if len(config.RestHostname) == 0 {

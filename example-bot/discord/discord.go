@@ -11,10 +11,9 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 )
 
-// type BotInstance struct {
-// 	ExampleBot *Discord
-// }
-
+type ExampleBot struct {
+	Discord *Discord
+}
 type Discord struct {
 	Session              *discordgo.Session
 	GuildID              string
@@ -106,14 +105,14 @@ func parseCommand(input, pattern string) (string, string, error) {
 	pattern = strings.ToLower(pattern)
 
 	if !strings.HasPrefix(input, pattern) {
-		return "", "", fmt.Errorf("Pattern not found")
+		return "", "", fmt.Errorf("pattern not found")
 	}
 
 	input = input[len(pattern):]
 
 	words := strings.Fields(input)
 	if len(words) == 0 {
-		return "", "", fmt.Errorf("No command found")
+		return "", "", fmt.Errorf("no command found")
 	}
 
 	command := words[0]

@@ -9,20 +9,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/slog"
-	example "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
+	example_bot "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 )
 
 type Rest struct {
-	ExampleBotInstances map[string]*example.Discord
+	ExampleBots map[string]*example_bot.ExampleBot
 }
 
 // NewRest initializes a new Rest object with the given botInstances.
 //
 // botInstances: a map of bot instances
 // Returns a pointer to the newly initialized Rest object
-func NewRest(exampleBotInstances map[string]*example.Discord) *Rest {
+func NewRest(exampleBots map[string]*example_bot.ExampleBot) *Rest {
 	return &Rest{
-		ExampleBotInstances: exampleBotInstances,
+		ExampleBots: exampleBots,
 	}
 }
 
@@ -149,7 +149,7 @@ func (r *Rest) registerGuildRoutes(router *gin.RouterGroup) {
 	router.GET("/ids", func(ctx *gin.Context) {
 		activeSessions := []GuildInfo{}
 
-		for guildID := range r.ExampleBotInstances {
+		for guildID := range r.ExampleBots {
 			activeSessions = append(activeSessions, GuildInfo{GuildID: guildID})
 		}
 

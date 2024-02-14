@@ -2,26 +2,21 @@ package manager
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
 
 	"github.com/keshon/discord-bot-boilerplate/example-bot/discord"
-	example "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
+	example_bot "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
 )
 
-var (
-	commandPrefix = os.Getenv("COMMAND_PREFIX")
-)
-
 type GuildManager struct {
-	Session             *discordgo.Session
-	ExampleBotInstances map[string]*example.Discord
-	commandPrefix       string
+	Session       *discordgo.Session
+	ExampleBots   map[string]*example_bot.ExampleBot
+	commandPrefix string
 }
 
 // NewGuildManager creates a new GuildManager with the given discord session and bot instances.
@@ -30,16 +25,16 @@ type GuildManager struct {
 // - session: *discordgo.Session
 // - botInstances: map[string]*discord.BotInstance
 // Return type: *GuildManager
-func NewGuildManager(session *discordgo.Session, examplebotInstances map[string]*example.Discord) *GuildManager {
+func NewGuildManager(session *discordgo.Session, examplebots map[string]*example_bot.ExampleBot) *GuildManager {
 	config, err := config.NewConfig()
 	if err != nil {
 		slog.Fatalf("Error loading config:", err)
 	}
 
 	return &GuildManager{
-		Session:             session,
-		ExampleBotInstances: examplebotInstances,
-		commandPrefix:       config.DiscordCommandPrefix,
+		Session:       session,
+		ExampleBots:   examplebots,
+		commandPrefix: config.DiscordCommandPrefix,
 	}
 }
 
@@ -112,7 +107,7 @@ func (gm *GuildManager) handleRegisterCommand(s *discordgo.Session, m *discordgo
 		return
 	}
 
-	gm.setupBotInstance(gm.ExampleBotInstances, s, guildID)
+	gm.setupBotInstance(gm.ExampleBots, s, guildID)
 	gm.Session.ChannelMessageSend(channelID, "Guild registered successfully")
 }
 
@@ -155,23 +150,25 @@ func (gm *GuildManager) handleUnregisterCommand(s *discordgo.Session, m *discord
 // - session: a Discord session
 // - guildID: the ID of the guild
 // Return type: none
-func (gm *GuildManager) setupBotInstance(exampleBotInstances map[string]*example.Discord, session *discordgo.Session, guildID string) {
-	exampleBotInstances[guildID] = discord.NewDiscord(session, guildID)
-	exampleBotInstances[guildID].Start(guildID)
+func (gm *GuildManager) setupBotInstance(exampleBots map[string]*example_bot.ExampleBot, session *discordgo.Session, guildID string) {
+	exampleBots[guildID] = &example_bot.ExampleBot{
+		Discord: discord.NewDiscord(session, guildID),
+	}
+	exampleBots[guildID].Discord.Start(guildID)
 }
 
 // removeBotInstance removes the bot instance for the given guild ID.
 //
 // guildID string
 func (gm *GuildManager) removeBotInstance(guildID string) {
-	instance, ok := gm.ExampleBotInstances[guildID]
+	instance, ok := gm.ExampleBots[guildID]
 	if !ok {
 		return // Guild instance not found, nothing to do
 	}
 
-	instance.IsInstanceActive = false
+	instance.Discord.IsInstanceActive = false
 
-	delete(gm.ExampleBotInstances, guildID)
+	delete(gm.ExampleBots, guildID)
 }
 
 // parseCommand parses the input based on the given pattern and returns the command and parameter.
@@ -182,14 +179,14 @@ func parseCommand(input, pattern string) (string, string, error) {
 	pattern = strings.ToLower(pattern)
 
 	if !strings.HasPrefix(input, pattern) {
-		return "", "", fmt.Errorf("Pattern not found")
+		return "", "", fmt.Errorf("pattern not found")
 	}
 
 	input = input[len(pattern):]
 
 	words := strings.Fields(input)
 	if len(words) == 0 {
-		return "", "", fmt.Errorf("No command found")
+		return "", "", fmt.Errorf("no command found")
 	}
 
 	command := words[0]
