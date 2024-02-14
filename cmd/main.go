@@ -12,7 +12,7 @@ import (
 	"github.com/gookit/slog/handler"
 
 	"github.com/keshon/discord-bot-boilerplate/example-bot/discord"
-	exampleDiscord "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
+	example "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
 	"github.com/keshon/discord-bot-boilerplate/internal/manager"
@@ -107,12 +107,12 @@ func startBots(session *discordgo.Session) map[string]*discord.BotInstance {
 		log.Fatal("Error retrieving or creating guilds", err)
 	}
 	for _, guildID := range guildIDs {
-		exampleBotInstance := exampleDiscord.NewDiscord(session, guildID)
-		botInstances[guildID] = &exampleDiscord.BotInstance{
-			ExampleBot: exampleBotInstance,
+		exampleInstance := example.NewDiscord(session, guildID)
+		botInstances[guildID] = &example.BotInstance{
+			ExampleBot: exampleInstance,
 			// ..add more bots here
 		}
-		exampleBotInstance.Start(guildID)
+		exampleInstance.Start(guildID)
 	}
 	return botInstances
 }
