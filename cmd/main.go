@@ -100,10 +100,8 @@ func createDiscordSession(token string) *discordgo.Session {
 // map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
 func startBots(session *discordgo.Session) map[string]*discord.BotInstance {
 	botInstances := make(map[string]*discord.BotInstance)
-
 	guildManager := manager.NewGuildManager(session, botInstances)
 	guildManager.Start()
-
 	guildIDs, err := db.GetAllGuildIDs()
 	if err != nil {
 		log.Fatal("Error retrieving or creating guilds", err)
