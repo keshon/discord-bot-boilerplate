@@ -76,7 +76,7 @@ func loadConfig() *config.Config {
 // No parameters.
 // No return type.
 func initDatabase() {
-	_, err := db.InitDB("./dbase.db")
+	_, err := db.InitDB("./database.db")
 	if err != nil {
 		slog.Fatal("Error initializing the database", err)
 		os.Exit(1)
@@ -100,8 +100,10 @@ func createDiscordSession(token string) *discordgo.Session {
 // map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
 func startBots(session *discordgo.Session) map[string]*discord.BotInstance {
 	botInstances := make(map[string]*discord.BotInstance)
+
 	guildManager := manager.NewGuildManager(session, botInstances)
 	guildManager.Start()
+
 	guildIDs, err := db.GetAllGuildIDs()
 	if err != nil {
 		log.Fatal("Error retrieving or creating guilds", err)

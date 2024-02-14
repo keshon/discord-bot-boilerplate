@@ -13,30 +13,30 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
 )
 
-// handleHelpCommand handles the help command for Discord.
+// handleHelpCommand handles the help command for the Discord bot.
+//
+// Takes in a session and a message create, and does not return any value.
 func (d *Discord) handleHelpCommand(s *discordgo.Session, m *discordgo.MessageCreate) {
 	d.changeAvatar(s)
 
-	config, err := config.NewConfig()
+	cfg, err := config.NewConfig()
 	if err != nil {
-		slog.Fatalf("Error loading config: %v", err)
+		slog.Fatal("Error loading config", err)
+		return
 	}
 
-	var hostname string
-	if os.Getenv("HOST") == "" {
-		hostname = config.RestHostname
-	} else {
-		hostname = os.Getenv("HOST") // from docker environment
+	host := os.Getenv("HOST")
+	if host == "" {
+		host = cfg.RestHostname
 	}
 
-	avatarUrl := utils.InferProtocolByPort(hostname, 443) + hostname + "/avatar/random?" + fmt.Sprint(time.Now().UnixNano())
-	slog.Info(avatarUrl)
-
-	example := fmt.Sprintf("`%vexample` - prints Hello World\n", d.prefix)
-	help := fmt.Sprintf("**Show help**: `%vhelp` \nAliases: `%vh`\n", d.prefix, d.prefix)
-	about := fmt.Sprintf("**Show version**: `%vabout` \nAliases: `%va`\n", d.prefix, d.prefix)
-	register := fmt.Sprintf("**Enable commands listening**: `%vregister`\n", d.prefix)
-	unregister := fmt.Sprintf("**Disable commands listening**: `%vunregister`", d.prefix)
+	avatarURL := utils.InferProtocolByPort(host, 443) + host + "/avatar/random?" + fmt.Sprint(time.Now().UnixNano())
+	prefix := d.commandPrefix
+	example := fmt.Sprintf("`%vexample` - prints Hello World\n", prefix)
+	help := fmt.Sprintf("**Show help**: `%vhelp` \nAliases: `%vh`\n", prefix, prefix)
+	about := fmt.Sprintf("**Show version**: `%vabout` \nAliases: `%va`\n", prefix, prefix)
+	register := fmt.Sprintf("**Enable commands listening**: `%vregister`\n", prefix)
+	unregister := fmt.Sprintf("**Disable commands listening**: `%vunregister`", prefix)
 
 	embedMsg := embed.NewEmbed().
 		SetTitle(fmt.Sprintf("ℹ️ %v — Command Usage", version.AppName)).
@@ -46,8 +46,13 @@ func (d *Discord) handleHelpCommand(s *discordgo.Session, m *discordgo.MessageCr
 		AddField("", "*General*\n"+help+about).
 		AddField("", "").
 		AddField("", "*Administration*\n"+register+unregister).
-		SetThumbnail(avatarUrl). // TODO: move out to config .env file
-		SetColor(0x9f00d4).SetFooter(version.AppFullName).MessageEmbed
+		SetThumbnail(avatarURL).
+		SetColor(0x9f00d4).
+		SetFooter(version.AppFullName).
+		MessageEmbed
 
-	s.ChannelMessageSendEmbed(m.Message.ChannelID, embedMsg)
+	_, err = s.ChannelMessageSendEmbed(m.Message.ChannelID, embedMsg)
+	if err != nil {
+		slog.Fatal("Error sending embed message", err)
+	}
 }

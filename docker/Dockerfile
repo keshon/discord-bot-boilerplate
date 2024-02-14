@@ -11,7 +11,7 @@ RUN GO_VERSION=$(go version | awk '{print $3}') && \
     CGO_ENABLED=1 && \
     rm -f .env && \
     go build -o app -ldflags "-X 'github.com/keshon/discord-bot-boilerplate/internal/version.BuildDate=${BUILD_DATE}' -X 'github.com/keshon/discord-bot-boilerplate/internal/version.GoVersion=${GO_VERSION}'" cmd/main.go && \
-    mv dbase.db.empty dbase.db
+    mv database.db.empty database.db
 
 # Second stage: create the final image
 FROM alpine:3.17

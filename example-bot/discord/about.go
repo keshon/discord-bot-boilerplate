@@ -14,32 +14,31 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
 )
 
-// handleAboutCommand handles the about command for Discord.
+// handleAboutCommand is a function to handle the about command in Discord.
+//
+// It takes a Discord session and a Discord message as parameters and does not return anything.
 func (d *Discord) handleAboutCommand(s *discordgo.Session, m *discordgo.MessageCreate) {
 	d.changeAvatar(s)
 
 	config, err := config.NewConfig()
 	if err != nil {
-		slog.Fatalf("Error loading config: %v", err)
+		slog.Fatal("Error loading config", err)
+		return
 	}
 
-	var hostname string
-	if os.Getenv("HOST") == "" {
+	hostname := os.Getenv("HOST")
+	if hostname == "" {
 		hostname = config.RestHostname
-	} else {
-		hostname = os.Getenv("HOST") // from docker environment
 	}
 
-	avatarUrl := utils.InferProtocolByPort(hostname, 443) + hostname + "/avatar/random?" + fmt.Sprint(time.Now().UnixNano())
+	avatarUrl := fmt.Sprintf("%s://%s/avatar/random?%d", utils.InferProtocolByPort(hostname, 443), hostname, time.Now().UnixNano())
 	slog.Info(avatarUrl)
 
-	title := "About Dice Roller"                                                        //getRandomAboutTitlePhrase()
-	content := "example-bot roller is a simple implementation of rolling dices for D&D" //getRandomAboutDescriptionPhrase()
-
-	embedStr := fmt.Sprintf("**%v**\n\n%v", title, content)
+	title := fmt.Sprintf("ℹ️ %v — About", version.AppName)
+	content := fmt.Sprintf("**%v**\n\n%v", version.AppName, version.AppDescription)
 
 	embedMsg := embed.NewEmbed().
-		SetDescription(embedStr).
+		SetDescription(fmt.Sprintf("**%v**\n\n%v", title, content)).
 		AddField("```"+version.BuildDate+"```", "Build date").
 		AddField("```"+version.GoVersion+"```", "Go version").
 		AddField("```Created by Innokentiy Sokolov```", "[Linkedin](https://www.linkedin.com/in/keshon), [GitHub](https://github.com/keshon), [Homepage](https://keshon.ru)").
@@ -47,5 +46,8 @@ func (d *Discord) handleAboutCommand(s *discordgo.Session, m *discordgo.MessageC
 		SetImage(avatarUrl).
 		SetColor(0x9f00d4).SetFooter(version.AppFullName).MessageEmbed
 
-	s.ChannelMessageSendEmbed(m.Message.ChannelID, embedMsg)
+	_, err = s.ChannelMessageSendEmbed(m.Message.ChannelID, embedMsg)
+	if err != nil {
+		slog.Fatal("Error sending embed message", err)
+	}
 }

@@ -8,14 +8,24 @@ import (
 )
 
 // handleRollCommand handles the roll command for Discord.
+
+// handleExampleCommand handles the example command for the Discord bot.
+//
+// Parameters:
+//
+//	s - the Discord session
+//	m - the message create event
+//	param - the command parameter
+//
+// Return type: None
 func (d *Discord) handleExampleCommand(s *discordgo.Session, m *discordgo.MessageCreate, param string) {
 	d.changeAvatar(s)
 
-	helloWorld := "Hello World"
+	message := "Hello World"
 
-	embedMsg := embed.NewEmbed().
-		SetTitle(fmt.Sprintf("%v", helloWorld)).
+	embed := embed.NewEmbed().
+		SetTitle(fmt.Sprintf("%v", message)).
 		SetColor(0x9f00d4)
 
-	s.ChannelMessageSendEmbed(m.ChannelID, embedMsg.MessageEmbed)
+	s.ChannelMessageSendEmbed(m.ChannelID, embed.MessageEmbed)
 }

@@ -1,7 +1,9 @@
 package manager
 
 import (
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
@@ -68,7 +70,7 @@ func (gm *GuildManager) Commands(s *discordgo.Session, m *discordgo.MessageCreat
 		}
 
 		if !exists {
-			gm.Session.ChannelMessageSend(m.Message.ChannelID, "Guild must be registered first. Use `"+gm.commandPrefix+"register` command.")
+			gm.Session.ChannelMessageSend(m.Message.ChannelID, "Guild must be registered first.\nUse `"+gm.commandPrefix+"register` command.")
 			return
 		}
 	}
@@ -168,7 +170,34 @@ func (gm *GuildManager) removeBotInstance(guildID string) {
 		return // Guild instance not found, nothing to do
 	}
 
-	instance.ExampleBot.InstanceActive = false
+	instance.ExampleBot.IsInstanceActive = false
 
 	delete(gm.BotInstances, guildID)
+}
+
+// parseCommand parses the input based on the given pattern and returns the command and parameter.
+//
+// It takes two string parameters and returns two strings and an error.
+func parseCommand(input, pattern string) (string, string, error) {
+	input = strings.ToLower(input)
+	pattern = strings.ToLower(pattern)
+
+	if !strings.HasPrefix(input, pattern) {
+		return "", "", fmt.Errorf("Pattern not found")
+	}
+
+	input = input[len(pattern):]
+
+	words := strings.Fields(input)
+	if len(words) == 0 {
+		return "", "", fmt.Errorf("No command found")
+	}
+
+	command := words[0]
+	parameter := ""
+	if len(words) > 1 {
+		parameter = strings.Join(words[1:], " ")
+		parameter = strings.TrimSpace(parameter)
+	}
+	return command, parameter, nil
 }

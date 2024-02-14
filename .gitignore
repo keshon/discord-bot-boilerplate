@@ -1,7 +1,17 @@
-/.VSCodeCounter
+# Ignore .VSCodeCounter directory
+.VSCodeCounter/
 
+# Ignore database files
 *.db
+
+# Ignore environment files
 .env
+
+# Ignore UPX compressed files
 *.upx
-logs/*
+
+# Ignore logs directory and its contents
+logs/
+
+# Ignore executable files in root directory
 /*.exe

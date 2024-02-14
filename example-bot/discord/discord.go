@@ -11,104 +11,106 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 )
 
-// BotInstance represents an instance of a Discord bot.
 type BotInstance struct {
 	ExampleBot *Discord
 }
 
-// Discord represents the Melodix instance for Discord.
 type Discord struct {
 	Session              *discordgo.Session
 	GuildID              string
-	InstanceActive       bool
-	prefix               string
+	IsInstanceActive     bool
+	commandPrefix        string
 	lastChangeAvatarTime time.Time
 	rateLimitDuration    time.Duration
 }
 
-// NewDiscord creates a new instance of Discord.
+// NewDiscord initializes a new Discord object with the given session and guild ID.
+//
+// Parameters:
+// - session: a pointer to a discordgo.Session
+// - guildID: a string representing the guild ID
+// Returns a pointer to a Discord object.
 func NewDiscord(session *discordgo.Session, guildID string) *Discord {
-	config, err := config.NewConfig()
-	if err != nil {
-		slog.Fatalf("Error loading config: %v", err)
-	}
+	config := loadConfig()
 
 	return &Discord{
-
 		Session:           session,
-		InstanceActive:    true,
-		prefix:            config.DiscordCommandPrefix,
+		IsInstanceActive:  true,
+		commandPrefix:     config.DiscordCommandPrefix,
 		rateLimitDuration: time.Minute * 10,
 	}
 }
 
-// Start starts the Discord instance.
-func (d *Discord) Start(guildID string) {
-	slog.Infof(`Discord instance started for guild id %v`, guildID)
+// loadConfig loads the configuration and returns a pointer to config.Config.
+//
+// No parameters.
+// Returns a pointer to config.Config.
+func loadConfig() *config.Config {
+	cfg, err := config.NewConfig()
+	if err != nil {
+		slog.Fatal("Error loading config", err)
+	}
+	return cfg
+}
 
-	d.Session.AddHandler(d.Commands)
+// Start starts the Discord instance for the given guild ID.
+//
+// Takes a guild ID as a parameter and does not return anything.
+func (d *Discord) Start(guildID string) {
+	slog.Info("Discord instance started for guild ID", guildID)
 	d.GuildID = guildID
 }
 
-// Commands handles incoming Discord commands.
+// Commands handles the incoming Discord commands.
+//
+// Parameters:
+//
+//	s: the Discord session
+//	m: the incoming Discord message
 func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.GuildID != d.GuildID {
+	slog.Warn(m.Message.Author.Username, ":", m.Message.Content)
+	if m.GuildID != d.GuildID || !d.IsInstanceActive {
 		return
 	}
 
-	if !d.InstanceActive {
-		return
-	}
-
-	slog.Info("User input:", m.Message.Content)
-
-	command, parameter, err := parseCommand(m.Message.Content, d.prefix)
+	command, parameter, err := parseCommand(m.Message.Content, d.commandPrefix)
 	if err != nil {
 		return
 	}
 
-	slog.Warnf("Command: %v, Parameter: %v", command, parameter)
-
-	commandAliases := [][]string{
+	switch getCanonicalCommand(command, [][]string{
 		{"example", "e"},
 		{"help", "h"},
 		{"about", "a"},
-	}
-
-	canonicalCommand := getCanonicalCommand(command, commandAliases)
-	if canonicalCommand == "" {
-		return
-	}
-
-	slog.Warn("Canonical command is ", canonicalCommand)
-	slog.Warn("Len of Canonical command is ", len(canonicalCommand))
-
-	switch canonicalCommand {
+	}) {
 	case "example":
+		slog.Error("in example")
 		d.handleExampleCommand(s, m, parameter)
 	case "help":
 		d.handleHelpCommand(s, m)
 	case "about":
 		d.handleAboutCommand(s, m)
-
-	default:
-		// Unknown command
 	}
 }
 
-// parseCommand parses the command and parameter from the Discord input based on the provided pattern.
-func parseCommand(content, pattern string) (string, string, error) {
-	// Convert both content and pattern to lowercase for case-insensitive comparison
-	content = strings.ToLower(content)
+// parseCommand parses the input based on the provided pattern
+//
+// input: the input string to be parsed
+// pattern: the pattern to match at the beginning of the input
+// string: the parsed command
+// string: the parsed parameter
+// error: an error if the pattern is not found or no command is found
+func parseCommand(input, pattern string) (string, string, error) {
+	input = strings.ToLower(input)
 	pattern = strings.ToLower(pattern)
 
-	if !strings.HasPrefix(content, pattern) {
+	if !strings.HasPrefix(input, pattern) {
 		return "", "", fmt.Errorf("Pattern not found")
 	}
 
-	content = content[len(pattern):] // Strip the pattern
+	input = input[len(pattern):]
 
-	words := strings.Fields(content) // Split by whitespace, handling multiple spaces
+	words := strings.Fields(input)
 	if len(words) == 0 {
 		return "", "", fmt.Errorf("No command found")
 	}
@@ -122,11 +124,16 @@ func parseCommand(content, pattern string) (string, string, error) {
 	return command, parameter, nil
 }
 
-// getCanonicalCommand gets the canonical command from aliases using the given alias.
+// getCanonicalCommand finds the canonical command for the given alias.
+//
+// Parameters:
+// - alias: a string representing the alias to be searched for.
+// - commandAliases: a 2D slice containing the list of command aliases.
+// Return type: string
 func getCanonicalCommand(alias string, commandAliases [][]string) string {
 	for _, aliases := range commandAliases {
-		for _, a := range aliases {
-			if a == alias {
+		for _, command := range aliases {
+			if command == alias {
 				return aliases[0]
 			}
 		}
@@ -134,40 +141,47 @@ func getCanonicalCommand(alias string, commandAliases [][]string) string {
 	return ""
 }
 
-// changeAvatar changes bot avatar with randomly picked avatar image within allowed rate limit
+// changeAvatar changes the avatar of the Discord user.
+//
+// It takes a session as a parameter and does not return anything.
 func (d *Discord) changeAvatar(s *discordgo.Session) {
-	// Check if the rate limit duration has passed since the last execution
 	if time.Since(d.lastChangeAvatarTime) < d.rateLimitDuration {
-		slog.Info("Rate-limited. Skipping changeAvatar.")
 		return
 	}
 
 	imgPath, err := utils.GetRandomImagePathFromPath("./assets/avatars")
 	if err != nil {
-		slog.Errorf("Error getting avatar path: %v", err)
+		slog.Error("Error getting random image path:", err)
 		return
 	}
 
 	avatar, err := utils.ReadFileToBase64(imgPath)
 	if err != nil {
-		fmt.Printf("Error preparing avatar: %v\n", err)
+		slog.Error("Error reading file to base64:", err)
 		return
 	}
 
 	_, err = s.UserUpdate("", avatar)
 	if err != nil {
-		slog.Errorf("Error setting the avatar: %v", err)
+		slog.Error("Error updating user avatar:", err)
 		return
 	}
 
 	d.lastChangeAvatarTime = time.Now()
 }
 
-func findUserVoiceState(userID string, voiceStates []*discordgo.VoiceState) (*discordgo.VoiceState, bool) {
-	for _, vs := range voiceStates {
-		if vs.UserID == userID {
-			return vs, true
+// findUserVoiceState finds the voice state of the user in the given list of voice states.
+//
+// userID: The ID of the user to find the voice state for.
+// voiceStates: The list of voice states to search through.
+// *discordgo.VoiceState, bool: The found voice state and a boolean indicating if it was found.
+func findUserVoiceState(userID string, voiceStates []*discordgo.VoiceState) (foundState *discordgo.VoiceState, found bool) {
+	for _, state := range voiceStates {
+		if state != nil && state.UserID == userID {
+			foundState = state
+			found = true
+			return
 		}
 	}
-	return nil, false
+	return
 }

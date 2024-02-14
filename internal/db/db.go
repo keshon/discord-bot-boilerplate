@@ -15,15 +15,16 @@ var (
 //
 // It takes a database path as a parameter and returns a *gorm.DB and an error.
 func InitDB(databasePath string) (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
+	var err error
+	DB, err = gorm.Open(sqlite.Open(databasePath), &gorm.Config{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
-	err = db.AutoMigrate(&Guild{})
+	err = DB.AutoMigrate(&Guild{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to auto migrate tables: %w", err)
 	}
 
-	return db, nil
+	return DB, nil
 }

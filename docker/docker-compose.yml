@@ -6,7 +6,7 @@ services:
     image: '${ALIAS}-image'
     volumes:
       - ./data/avatars:/usr/project/assets/avatars
-      - ./data/dice-roller.sqlite3:/usr/project/dice-roller.db
+      - ./data/database.sqlite3:/usr/project/database.db
       - ./data/all-levels.log:/usr/project/logs/all-levels.log
     environment:
       - HOST    
