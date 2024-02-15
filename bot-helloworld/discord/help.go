@@ -8,7 +8,7 @@ import (
 	embed "github.com/Clinet/discordgo-embed"
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
-	"github.com/keshon/discord-bot-boilerplate/example-bot/utils"
+	"github.com/keshon/discord-bot-boilerplate/bot-helloworld/utils"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
 )

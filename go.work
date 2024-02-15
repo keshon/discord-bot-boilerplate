@@ -2,5 +2,6 @@ go 1.21.1
 
 use (
 	.
-	./example-bot
+	./bot-greetings
+	./bot-helloworld
 )

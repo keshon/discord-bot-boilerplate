@@ -11,10 +11,11 @@ import (
 	"github.com/gookit/slog"
 	"github.com/gookit/slog/handler"
 
-	example_bot "github.com/keshon/discord-bot-boilerplate/example-bot/discord"
+	greetingsBot "github.com/keshon/discord-bot-boilerplate/bot-greetings/discord"
+	helloworldBot "github.com/keshon/discord-bot-boilerplate/bot-greetings/discord"
+	"github.com/keshon/discord-bot-boilerplate/internal/botsdef"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
-	"github.com/keshon/discord-bot-boilerplate/internal/manager"
 	"github.com/keshon/discord-bot-boilerplate/internal/rest"
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
 )
@@ -28,7 +29,7 @@ func main() {
 	config := loadConfig()
 	initDatabase()
 	discordSession := createDiscordSession(config.DiscordBotToken)
-	bots := startBots(discordSession)
+	bots := startBotHandlers(discordSession)
 	handleDiscordSession(discordSession)
 	startRestServer(config, bots)
 	slog.Infof("%v is now running. Press Ctrl+C to exit", version.AppName)
@@ -93,28 +94,39 @@ func createDiscordSession(token string) *discordgo.Session {
 	return session
 }
 
-// startBots initializes and starts Discord bot instances for each guild using the provided session.
+// startBotHandlers initializes and starts Discord bot instances for each guild using the provided session.
 //
 // session: a pointer to a discordgo.Session
 // map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
-func startBots(session *discordgo.Session) map[string]*example_bot.ExampleBot {
-	exampleBots := make(map[string]*example_bot.ExampleBot)
-
-	guildManager := manager.NewGuildManager(session, exampleBots)
-	guildManager.Start()
+func startBotHandlers(session *discordgo.Session) []map[string]botsdef.Discord {
+	bot1 := make(map[string]*greetingsBot.Discord)
+	bot2 := make(map[string]*helloworldBot.Discord)
 
 	guildIDs, err := db.GetAllGuildIDs()
-
 	if err != nil {
 		log.Fatal("Error retrieving or creating guilds", err)
 	}
+
 	for _, guildID := range guildIDs {
-		exampleBots[guildID] = &example_bot.ExampleBot{
-			Discord: example_bot.NewDiscord(session, guildID),
-		}
-		exampleBots[guildID].Discord.Start(guildID)
+		bot1[guildID] = greetingsBot.NewDiscord(session)
+		bot1[guildID].Start(guildID)
+
+		bot2[guildID] = helloworldBot.NewDiscord(session)
+		bot2[guildID].Start(guildID)
 	}
-	return exampleBots
+
+	var bots []map[string]botsdef.Discord
+	for id, bot := range bot1 {
+		bots = append(bots, map[string]botsdef.Discord{id: bot})
+	}
+	for id, bot := range bot2 {
+		bots = append(bots, map[string]botsdef.Discord{id: bot})
+	}
+
+	//guildManager := manager.NewGuildManager(session, exampleBots)
+	//guildManager.Start()
+
+	return bots
 }
 
 // handleDiscordSession is a Go function that opens a Discord session and handles any errors.
@@ -132,7 +144,7 @@ func handleDiscordSession(discordSession *discordgo.Session) {
 // startRestServer starts the REST server based on the given configuration and bot instances.
 //
 // It takes a config.Config pointer and a map of string to *discord.BotInstance as parameters.
-func startRestServer(config *config.Config, exampleBots map[string]*example_bot.ExampleBot) {
+func startRestServer(config *config.Config, bots []map[string]botsdef.Discord) {
 	if !config.RestEnabled {
 		return
 	}
@@ -140,7 +152,7 @@ func startRestServer(config *config.Config, exampleBots map[string]*example_bot.
 		gin.SetMode("release")
 	}
 	router := gin.Default()
-	restAPI := rest.NewRest(exampleBots)
+	restAPI := rest.NewRest(bots)
 	restAPI.Start(router)
 	go func() {
 		if len(config.RestHostname) == 0 {

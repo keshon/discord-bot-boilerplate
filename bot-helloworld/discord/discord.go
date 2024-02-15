@@ -7,13 +7,10 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
-	"github.com/keshon/discord-bot-boilerplate/example-bot/utils"
+	"github.com/keshon/discord-bot-boilerplate/bot-helloworld/utils"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 )
 
-type ExampleBot struct {
-	Discord *Discord
-}
 type Discord struct {
 	Session              *discordgo.Session
 	GuildID              string
@@ -29,7 +26,7 @@ type Discord struct {
 // - session: a pointer to a discordgo.Session
 // - guildID: a string representing the guild ID
 // Returns a pointer to a Discord object.
-func NewDiscord(session *discordgo.Session, guildID string) *Discord {
+func NewDiscord(session *discordgo.Session) *Discord {
 	config := loadConfig()
 
 	return &Discord{

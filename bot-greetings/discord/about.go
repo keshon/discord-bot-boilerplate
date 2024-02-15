@@ -9,7 +9,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
 
-	"github.com/keshon/discord-bot-boilerplate/example-bot/utils"
+	"github.com/keshon/discord-bot-boilerplate/bot-greetings/utils"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
 )
