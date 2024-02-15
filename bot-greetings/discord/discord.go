@@ -53,9 +53,13 @@ func loadConfig() *config.Config {
 //
 // guildID string
 func (d *Discord) Start(guildID string) {
-	slog.Info("Discord instance started for guild ID", guildID)
+	slog.Info("Discord instance for bot-greetings started for guild ID", guildID)
 	d.Session.AddHandler(d.Commands)
 	d.GuildID = guildID
+}
+
+func (d *Discord) Stop() {
+	d.IsInstanceActive = false
 }
 
 // Commands handles the incoming Discord commands.
@@ -76,16 +80,15 @@ func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	switch getCanonicalCommand(command, [][]string{
-		{"example", "e"},
-		{"help", "h"},
-		{"about", "a"},
+		{"greet", "g"},
+		{"greet-help", "gh"},
+		{"greet-about", "ga"},
 	}) {
-	case "example":
-		slog.Error("in example")
-		d.handleExampleCommand(s, m, parameter)
-	case "help":
+	case "greet":
+		d.handleGreetCommand(s, m, parameter)
+	case "greet-help":
 		d.handleHelpCommand(s, m)
-	case "about":
+	case "greet-about":
 		d.handleAboutCommand(s, m)
 	}
 }

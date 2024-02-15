@@ -18,7 +18,7 @@ import (
 //	param - the command parameter
 //
 // Return type: None
-func (d *Discord) handleExampleCommand(s *discordgo.Session, m *discordgo.MessageCreate, param string) {
+func (d *Discord) handleHelloCommand(s *discordgo.Session, m *discordgo.MessageCreate, param string) {
 	d.changeAvatar(s)
 
 	message := "Hello World"

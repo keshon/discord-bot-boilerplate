@@ -14,14 +14,14 @@ import (
 )
 
 type Rest struct {
-	Bots []map[string]botsdef.Discord
+	Bots []map[string]map[string]botsdef.Discord
 }
 
 // NewRest initializes a new Rest object with the given botInstances.
 //
 // botInstances: a map of bot instances
 // Returns a pointer to the newly initialized Rest object
-func NewRest(bots []map[string]botsdef.Discord) *Rest {
+func NewRest(bots []map[string]map[string]botsdef.Discord) *Rest {
 	return &Rest{
 		Bots: bots,
 	}

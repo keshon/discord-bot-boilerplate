@@ -18,10 +18,10 @@ import (
 //	param - the command parameter
 //
 // Return type: None
-func (d *Discord) handleExampleCommand(s *discordgo.Session, m *discordgo.MessageCreate, param string) {
+func (d *Discord) handleGreetCommand(s *discordgo.Session, m *discordgo.MessageCreate, param string) {
 	d.changeAvatar(s)
 
-	message := "Hello World"
+	message := "Greetings!"
 
 	embed := embed.NewEmbed().
 		SetTitle(fmt.Sprintf("%v", message)).
