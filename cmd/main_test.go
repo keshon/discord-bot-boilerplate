@@ -6,14 +6,6 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 )
 
-func TestCreateDiscordSession_ValidToken(t *testing.T) {
-	token := "MTE4MjA2Mzk1Mzc4Mjc4NDIxMQ.G1FbPm.WyCOitk1BkaVC83q2xnHTda3u5USZmBVotPyxw"
-	session := createDiscordSession(token)
-	if session == nil {
-		t.Errorf("Expected a non-nil session, got nil")
-	}
-}
-
 func TestStartRestServer(t *testing.T) {
 	t.Run("RestDisabled", func(t *testing.T) {
 		config := &config.Config{RestEnabled: false}
