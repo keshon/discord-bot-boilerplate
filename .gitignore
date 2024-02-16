@@ -1,6 +1,9 @@
 # Ignore .VSCodeCounter directory
 .VSCodeCounter/
 
+# Ignore .vscode directory
+.vscode/
+
 # Ignore database files
 *.db
 
