@@ -7,7 +7,9 @@ import (
 	hiGalaxy "github.com/keshon/discord-bot-boilerplate/mod-higalaxy/discord"
 )
 
-// createBotInstance creates a new bot instance based on the module name.
+var Modules = []string{"hi", "hello"}
+
+// CreateBotInstance creates a new bot instance based on the module name.
 //
 // Parameters:
 // - session: a Discord session
@@ -27,5 +29,3 @@ func CreateBotInstance(session *discordgo.Session, module string) Discord {
 		return nil
 	}
 }
-
-// stopped here

@@ -17,9 +17,6 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/manager"
 	"github.com/keshon/discord-bot-boilerplate/internal/rest"
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
-
-	helloWorld "github.com/keshon/discord-bot-boilerplate/mod-helloworld/discord"
-	hiGalaxy "github.com/keshon/discord-bot-boilerplate/mod-higalaxy/discord"
 )
 
 // main is the entry point of the program.
@@ -111,13 +108,13 @@ func startBotHandlers(session *discordgo.Session) map[string]map[string]botsdef.
 	for _, id := range guildIDs {
 		bots[id] = make(map[string]botsdef.Discord)
 
-		// Add hiGalaxy instance
-		bots[id]["higalaxy"] = hiGalaxy.NewDiscord(session)
-		bots[id]["higalaxy"].Start(id)
-
-		// Add helloWorld instance
-		bots[id]["helloworld"] = helloWorld.NewDiscord(session)
-		bots[id]["helloworld"].Start(id)
+		for _, module := range botsdef.Modules {
+			botInstance := botsdef.CreateBotInstance(session, module)
+			if botInstance != nil {
+				bots[id][module] = botInstance
+				botInstance.Start(id)
+			}
+		}
 	}
 
 	guildManager := manager.NewGuildManager(session, bots)
