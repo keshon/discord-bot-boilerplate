@@ -7,8 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
-	"github.com/keshon/discord-bot-boilerplate/bot-helloworld/utils"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
+	"github.com/keshon/discord-bot-boilerplate/mod-higalaxy/utils"
 )
 
 type Discord struct {
@@ -53,7 +53,7 @@ func loadConfig() *config.Config {
 //
 // guildID string
 func (d *Discord) Start(guildID string) {
-	slog.Info("Discord instance for bot-helloworld started for guild ID", guildID)
+	slog.Info("Discord instance for mod-higalaxy started for guild ID", guildID)
 	d.Session.AddHandler(d.Commands)
 	d.GuildID = guildID
 }
@@ -80,16 +80,10 @@ func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	switch getCanonicalCommand(command, [][]string{
-		{"hello", "l"},
-		{"hello-help", "hh"},
-		{"hello-about", "ha"},
+		{"hi"},
 	}) {
-	case "hello":
-		d.handleHelloCommand(s, m, parameter)
-	case "hello-help":
-		d.handleHelpCommand(s, m)
-	case "hello-about":
-		d.handleAboutCommand(s, m)
+	case "hi":
+		d.handleHiCommand(s, m, parameter)
 	}
 }
 

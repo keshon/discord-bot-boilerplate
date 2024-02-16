@@ -18,8 +18,8 @@ import (
 	"github.com/keshon/discord-bot-boilerplate/internal/rest"
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
 
-	greetings "github.com/keshon/discord-bot-boilerplate/bot-greetings/discord"
-	helloworld "github.com/keshon/discord-bot-boilerplate/bot-helloworld/discord"
+	helloWorld "github.com/keshon/discord-bot-boilerplate/mod-helloworld/discord"
+	hiGalaxy "github.com/keshon/discord-bot-boilerplate/mod-higalaxy/discord"
 )
 
 // main is the entry point of the program.
@@ -100,31 +100,24 @@ func createDiscordSession(token string) *discordgo.Session {
 //
 // session: a pointer to a discordgo.Session
 // map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
-func startBotHandlers(session *discordgo.Session) []map[string]map[string]botsdef.Discord {
-	bot1 := make(map[string]map[string]botsdef.Discord)
-	bot2 := make(map[string]map[string]botsdef.Discord)
+func startBotHandlers(session *discordgo.Session) map[string]map[string]botsdef.Discord {
+	bots := make(map[string]map[string]botsdef.Discord)
 
 	guildIDs, err := db.GetAllGuildIDs()
 	if err != nil {
 		log.Fatal("Error retrieving or creating guilds", err)
 	}
 
-	for _, guildID := range guildIDs {
-		bot1[guildID] = make(map[string]botsdef.Discord)
-		bot1[guildID]["bot1"] = greetings.NewDiscord(session)
-		bot1[guildID]["bot1"].Start(guildID)
+	for _, id := range guildIDs {
+		bots[id] = make(map[string]botsdef.Discord)
 
-		bot2[guildID] = make(map[string]botsdef.Discord)
-		bot2[guildID]["bot2"] = helloworld.NewDiscord(session)
-		bot2[guildID]["bot2"].Start(guildID)
-	}
+		// Add hiGalaxy instance
+		bots[id]["higalaxy"] = hiGalaxy.NewDiscord(session)
+		bots[id]["higalaxy"].Start(id)
 
-	var bots []map[string]map[string]botsdef.Discord
-	for id, bot := range bot1 {
-		bots = append(bots, map[string]map[string]botsdef.Discord{id: bot})
-	}
-	for id, bot := range bot2 {
-		bots = append(bots, map[string]map[string]botsdef.Discord{id: bot})
+		// Add helloWorld instance
+		bots[id]["helloworld"] = helloWorld.NewDiscord(session)
+		bots[id]["helloworld"].Start(id)
 	}
 
 	guildManager := manager.NewGuildManager(session, bots)
@@ -148,7 +141,7 @@ func handleDiscordSession(discordSession *discordgo.Session) {
 // startRestServer starts the REST server based on the given configuration and bot instances.
 //
 // It takes a config.Config pointer and a map of string to *discord.BotInstance as parameters.
-func startRestServer(config *config.Config, bots []map[string]map[string]botsdef.Discord) {
+func startRestServer(config *config.Config, bots map[string]map[string]botsdef.Discord) {
 	if !config.RestEnabled {
 		return
 	}

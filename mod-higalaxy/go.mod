@@ -1,4 +1,4 @@
-module github.com/keshon/discord-bot-boilerplate/bot-greetings
+module github.com/keshon/discord-bot-boilerplate/mod-higalaxy
 
 go 1.21.1
 

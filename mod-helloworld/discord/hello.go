@@ -25,7 +25,8 @@ func (d *Discord) handleHelloCommand(s *discordgo.Session, m *discordgo.MessageC
 
 	embed := embed.NewEmbed().
 		SetTitle(fmt.Sprintf("%v", message)).
-		SetColor(0x9f00d4)
+		SetColor(0x9f00d4).
+		SetFooter("From mod-helloworld")
 
 	s.ChannelMessageSendEmbed(m.ChannelID, embed.MessageEmbed)
 }

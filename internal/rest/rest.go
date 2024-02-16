@@ -2,7 +2,6 @@ package rest
 
 import (
 	"io"
-	"strconv"
 
 	"net/http"
 	"os"
@@ -14,14 +13,14 @@ import (
 )
 
 type Rest struct {
-	Bots []map[string]map[string]botsdef.Discord
+	Bots map[string]map[string]botsdef.Discord
 }
 
 // NewRest initializes a new Rest object with the given botInstances.
 //
 // botInstances: a map of bot instances
 // Returns a pointer to the newly initialized Rest object
-func NewRest(bots []map[string]map[string]botsdef.Discord) *Rest {
+func NewRest(bots map[string]map[string]botsdef.Discord) *Rest {
 	return &Rest{
 		Bots: bots,
 	}
@@ -151,7 +150,6 @@ func (r *Rest) registerGuildRoutes(router *gin.RouterGroup) {
 		activeSessions := []GuildInfo{}
 
 		for guildID := range r.Bots {
-			guildID := strconv.Itoa(guildID)
 			activeSessions = append(activeSessions, GuildInfo{GuildID: guildID})
 		}
 

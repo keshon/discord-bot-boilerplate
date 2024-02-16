@@ -7,16 +7,16 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
 
-	greetingsBot "github.com/keshon/discord-bot-boilerplate/bot-greetings/discord"
-	helloworldBot "github.com/keshon/discord-bot-boilerplate/bot-helloworld/discord"
 	"github.com/keshon/discord-bot-boilerplate/internal/botsdef"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/db"
+	helloWorld "github.com/keshon/discord-bot-boilerplate/mod-helloworld/discord"
+	hiGalaxy "github.com/keshon/discord-bot-boilerplate/mod-higalaxy/discord"
 )
 
 type GuildManager struct {
 	Session       *discordgo.Session
-	Bots          []map[string]map[string]botsdef.Discord
+	Bots          map[string]map[string]botsdef.Discord
 	commandPrefix string
 }
 
@@ -26,7 +26,7 @@ type GuildManager struct {
 // - session: *discordgo.Session
 // - botInstances: map[string]*discord.BotInstance
 // Return type: *GuildManager
-func NewGuildManager(session *discordgo.Session, bots []map[string]map[string]botsdef.Discord) *GuildManager {
+func NewGuildManager(session *discordgo.Session, bots map[string]map[string]botsdef.Discord) *GuildManager {
 	config, err := config.NewConfig()
 	if err != nil {
 		slog.Fatalf("Error loading config:", err)
@@ -58,7 +58,7 @@ func (gm *GuildManager) Commands(s *discordgo.Session, m *discordgo.MessageCreat
 	}
 
 	switch command {
-	case "greet", "hello", "greet-about", "greet-help", "hello-about", "hello-help":
+	case "hi", "hello", "about", "a", "help", "h":
 		guildID := m.GuildID
 		exists, err := db.DoesGuildExist(guildID)
 		if err != nil {
@@ -151,32 +151,19 @@ func (gm *GuildManager) handleUnregisterCommand(s *discordgo.Session, m *discord
 // - session: a Discord session
 // - guildID: the ID of the guild
 // Return type: none
-func (gm *GuildManager) setupBotInstance(bots []map[string]map[string]botsdef.Discord, session *discordgo.Session, guildID string) {
-	for _, bot := range bots {
-		// Check if the guild instance exists in the map
-		if bot[guildID] != nil {
-			// Guild instance already exists, stop and remove existing bots
-			if instance, ok := bot[guildID]["bot1"]; ok {
-				instance.Stop()
-				delete(bot[guildID], "bot1")
-			}
-			if instance, ok := bot[guildID]["bot2"]; ok {
-				instance.Stop()
-				delete(bot[guildID], "bot2")
-			}
-		} else {
-			// Guild instance not found, create a new map
-			bot[guildID] = make(map[string]botsdef.Discord)
-		}
-
-		// Create and start new instances of bot1 and bot2
-		bot[guildID]["bot1"] = greetingsBot.NewDiscord(session)
-		bot[guildID]["bot1"].Start(guildID)
-
-		bot[guildID]["bot2"] = helloworldBot.NewDiscord(session)
-		bot[guildID]["bot2"].Start(guildID)
-		//stopped here
+func (gm *GuildManager) setupBotInstance(bots map[string]map[string]botsdef.Discord, session *discordgo.Session, guildID string) {
+	// Initialize the inner map if it doesn't exist
+	if _, ok := bots[guildID]; !ok {
+		bots[guildID] = make(map[string]botsdef.Discord)
 	}
+
+	// Add hiGalaxy instance
+	bots[guildID]["higalaxy"] = hiGalaxy.NewDiscord(session)
+	bots[guildID]["higalaxy"].Start(guildID)
+
+	// Add helloWorld instance
+	bots[guildID]["helloworld"] = helloWorld.NewDiscord(session)
+	bots[guildID]["helloworld"].Start(guildID)
 }
 
 // removeBotInstance removes the bot instance for the given guild ID.
@@ -184,29 +171,24 @@ func (gm *GuildManager) setupBotInstance(bots []map[string]map[string]botsdef.Di
 // guildID string
 // removeBotInstance removes the bot instances for the given guild ID.
 func (gm *GuildManager) removeBotInstance(guildID string) {
-	for _, bot := range gm.Bots {
-		// Check if the guild instance exists in the map
-		if bot[guildID] == nil {
-			continue // Guild instance not found, move to the next iteration
-		}
-
-		// Remove bot1 instance
-		if instance, ok := bot[guildID]["bot1"]; ok {
-			instance.Stop()
-			delete(bot[guildID], "bot1")
-		}
-
-		// Remove bot2 instance
-		if instance, ok := bot[guildID]["bot2"]; ok {
-			instance.Stop()
-			delete(bot[guildID], "bot2")
-		}
-
-		// If the guild map is now empty, remove the guild entry from the main map
-		if len(bot[guildID]) == 0 {
-			delete(bot, guildID)
-		}
+	bots, ok := gm.Bots[guildID]
+	if !ok {
+		return
 	}
+
+	// Check if "higalaxy" exists before trying to stop and delete
+	if bot, ok := bots["higalaxy"]; ok {
+		bot.Stop()
+		delete(bots, "higalaxy")
+	}
+
+	// Check if "helloworld" exists before trying to stop and delete
+	if bot, ok := bots["helloworld"]; ok {
+		bot.Stop()
+		delete(bots, "helloworld")
+	}
+
+	delete(gm.Bots, guildID)
 }
 
 // parseCommand parses the input based on the given pattern and returns the command and parameter.

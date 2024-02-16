@@ -7,8 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
-	"github.com/keshon/discord-bot-boilerplate/bot-greetings/utils"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
+	"github.com/keshon/discord-bot-boilerplate/mod-helloworld/utils"
 )
 
 type Discord struct {
@@ -53,7 +53,7 @@ func loadConfig() *config.Config {
 //
 // guildID string
 func (d *Discord) Start(guildID string) {
-	slog.Info("Discord instance for bot-greetings started for guild ID", guildID)
+	slog.Info("Discord instance for mod-helloworld started for guild ID", guildID)
 	d.Session.AddHandler(d.Commands)
 	d.GuildID = guildID
 }
@@ -80,15 +80,15 @@ func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	switch getCanonicalCommand(command, [][]string{
-		{"greet", "g"},
-		{"greet-help", "gh"},
-		{"greet-about", "ga"},
+		{"hello"},
+		{"help", "h"},
+		{"about", "a"},
 	}) {
-	case "greet":
-		d.handleGreetCommand(s, m, parameter)
-	case "greet-help":
+	case "hello":
+		d.handleHelloCommand(s, m, parameter)
+	case "help":
 		d.handleHelpCommand(s, m)
-	case "greet-about":
+	case "about":
 		d.handleAboutCommand(s, m)
 	}
 }

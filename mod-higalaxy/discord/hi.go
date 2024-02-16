@@ -18,14 +18,15 @@ import (
 //	param - the command parameter
 //
 // Return type: None
-func (d *Discord) handleGreetCommand(s *discordgo.Session, m *discordgo.MessageCreate, param string) {
+func (d *Discord) handleHiCommand(s *discordgo.Session, m *discordgo.MessageCreate, param string) {
 	d.changeAvatar(s)
 
-	message := "Greetings!"
+	message := "Hi Galaxy!"
 
 	embed := embed.NewEmbed().
 		SetTitle(fmt.Sprintf("%v", message)).
-		SetColor(0x9f00d4)
+		SetColor(0x9f00d4).
+		SetFooter("From mod-higalaxy")
 
 	s.ChannelMessageSendEmbed(m.ChannelID, embed.MessageEmbed)
 }

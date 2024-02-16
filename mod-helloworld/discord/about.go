@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -9,9 +10,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
 
-	"github.com/keshon/discord-bot-boilerplate/bot-greetings/utils"
 	"github.com/keshon/discord-bot-boilerplate/internal/config"
 	"github.com/keshon/discord-bot-boilerplate/internal/version"
+	"github.com/keshon/discord-bot-boilerplate/mod-helloworld/utils"
 )
 
 // handleAboutCommand is a function to handle the about command in Discord.
@@ -20,34 +21,45 @@ import (
 func (d *Discord) handleAboutCommand(s *discordgo.Session, m *discordgo.MessageCreate) {
 	d.changeAvatar(s)
 
-	config, err := config.NewConfig()
+	cfg, err := config.NewConfig()
 	if err != nil {
-		slog.Fatal("Error loading config", err)
-		return
+		slog.Fatalf("Error loading config: %v", err)
 	}
 
-	hostname := os.Getenv("HOST")
-	if hostname == "" {
-		hostname = config.RestHostname
+	var host string
+	if os.Getenv("HOST") == "" {
+		host = cfg.RestHostname
+	} else {
+		host = os.Getenv("HOST") // from docker environment
 	}
 
-	avatarUrl := fmt.Sprintf("%s://%s/avatar/random?%d", utils.InferProtocolByPort(hostname, 443), hostname, time.Now().UnixNano())
-	slog.Info(avatarUrl)
+	avatarURL := utils.InferProtocolByPort(host, 443) + host + "/avatar/random?" + fmt.Sprint(time.Now().UnixNano())
+	slog.Info(avatarURL)
 
 	title := fmt.Sprintf("ℹ️ %v — About", version.AppName)
 	content := fmt.Sprintf("**%v**\n\n%v", version.AppName, version.AppDescription)
 
+	buildDate := "unknown"
+	if version.BuildDate != "" {
+		buildDate = version.BuildDate
+	}
+
+	goVer := "unknown"
+	if version.GoVersion != "" {
+		goVer = version.GoVersion
+	}
+
 	embedMsg := embed.NewEmbed().
 		SetDescription(fmt.Sprintf("**%v**\n\n%v", title, content)).
-		AddField("```"+version.BuildDate+"```", "Build date").
-		AddField("```"+version.GoVersion+"```", "Go version").
+		AddField("```"+buildDate+"```", "Build date").
+		AddField("```"+goVer+"```", "Go version").
 		AddField("```Created by Innokentiy Sokolov```", "[Linkedin](https://www.linkedin.com/in/keshon), [GitHub](https://github.com/keshon), [Homepage](https://keshon.ru)").
 		InlineAllFields().
-		SetImage(avatarUrl).
+		SetImage(avatarURL).
 		SetColor(0x9f00d4).SetFooter(version.AppFullName).MessageEmbed
 
-	_, err = s.ChannelMessageSendEmbed(m.Message.ChannelID, embedMsg)
+	_, err = s.ChannelMessageSendEmbed(m.ChannelID, embedMsg)
 	if err != nil {
-		slog.Fatal("Error sending embed message", err)
+		log.Fatal("Error sending embed message", err)
 	}
 }

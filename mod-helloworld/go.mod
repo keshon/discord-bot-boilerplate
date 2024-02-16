@@ -1,4 +1,4 @@
-module github.com/keshon/discord-bot-boilerplate/bot-helloworld
+module github.com/keshon/discord-bot-boilerplate/mod-helloworld
 
 go 1.21.1
 
