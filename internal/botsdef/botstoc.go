@@ -14,7 +14,7 @@ var Modules = []string{"hi", "hello"}
 // Parameters:
 // - session: a Discord session
 // - module: the name of the module ("hi" or "hello")
-// Returns a botsdef.Discord instance.
+// Returns a Discord instance.
 func CreateBotInstance(session *discordgo.Session, module string) Discord {
 	switch module {
 	case "hi":

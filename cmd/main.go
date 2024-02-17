@@ -93,10 +93,9 @@ func createDiscordSession(token string) *discordgo.Session {
 	return session
 }
 
-// startBotHandlers initializes and starts Discord bot instances for each guild using the provided session.
+// startBotHandlers initializes and starts Discord bot handlers for each guild.
 //
-// session: a pointer to a discordgo.Session
-// map[string]*discord.BotInstance: a map of guild IDs to their corresponding BotInstance pointers
+// It takes a *discordgo.Session as a parameter and returns a map[string]map[string]botsdef.Discord.
 func startBotHandlers(session *discordgo.Session) map[string]map[string]botsdef.Discord {
 	bots := make(map[string]map[string]botsdef.Discord)
 

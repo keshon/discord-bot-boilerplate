@@ -37,20 +37,9 @@ func (r *Rest) Start(router *gin.Engine) {
 		ctx.JSON(http.StatusOK, gin.H{"api_methods": toc})
 	})
 
-	logRoutes := router.Group("/log")
-	{
-		r.registerLogRoutes(logRoutes)
-	}
-
-	guildRoutes := router.Group("/guild")
-	{
-		r.registerGuildRoutes(guildRoutes)
-	}
-
-	avatarRoutes := router.Group("/avatar")
-	{
-		r.registerAvatarRoutes(avatarRoutes)
-	}
+	r.registerLogsRoutes(router.Group("/logs"))
+	r.registerGuildRoutes(router.Group("/guild"))
+	r.registerAvatarRoutes(router.Group("/avatar"))
 }
 
 type GuildInfo struct {
@@ -68,7 +57,7 @@ type GuildSession struct {
 // router *gin.Engine - The gin router to generate the table of contents for.
 // []map[string]string - The generated table of contents.
 func generateTableOfContents(router *gin.Engine) []map[string]string {
-	var toc []map[string]string
+	toc := make([]map[string]string, 0, len(router.Routes()))
 
 	for _, routeInfo := range router.Routes() {
 		route := map[string]string{
@@ -86,11 +75,11 @@ func generateTableOfContents(router *gin.Engine) []map[string]string {
 // http://localhost:8080/log/download
 // http://localhost:8080/log/clear
 
-// registerLogRoutes registers routes to handle logging in the Rest struct.
+// registerLogsRoutes registers routes to handle logging in the Rest struct.
 //
 // router: pointer to the gin RouterGroup where the routes will be registered.
 // No return value.
-func (r *Rest) registerLogRoutes(router *gin.RouterGroup) {
+func (r *Rest) registerLogsRoutes(router *gin.RouterGroup) {
 	router.GET("/", func(ctx *gin.Context) {
 		file, err := os.Open("./logs/all-levels.log")
 		if err != nil {
@@ -146,7 +135,7 @@ func (r *Rest) registerLogRoutes(router *gin.RouterGroup) {
 //
 // It takes a pointer to a gin.RouterGroup as a parameter and has no return type.
 func (r *Rest) registerGuildRoutes(router *gin.RouterGroup) {
-	router.GET("/ids", func(ctx *gin.Context) {
+	router.GET("/", func(ctx *gin.Context) {
 		activeSessions := []GuildInfo{}
 
 		for guildID := range r.Bots {

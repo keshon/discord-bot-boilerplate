@@ -145,10 +145,8 @@ func (gm *GuildManager) handleUnregisterCommand(s *discordgo.Session, m *discord
 // setupBotInstance sets up a bot instance for the given guild.
 //
 // Parameters:
-// - botInstances: a map of bot instances
-// - session: a Discord session
-// - guildID: the ID of the guild
-// Return type: none
+// - session: pointer to discordgo.Session
+// - guildID: string
 func (gm *GuildManager) setupBotInstance(session *discordgo.Session, guildID string) {
 	id := guildID
 
@@ -165,10 +163,11 @@ func (gm *GuildManager) setupBotInstance(session *discordgo.Session, guildID str
 	}
 }
 
-// removeBotInstance removes the bot instance for the given guild ID.
+// removeBotInstance removes a bot instance from the GuildManager's Bots map for the given guildID.
 //
-// guildID string
-// removeBotInstance removes the bot instances for the given guild ID.
+// Parameters:
+// - guildID string: the ID of the guild from which the bot instance will be removed.
+// No return type.
 func (gm *GuildManager) removeBotInstance(guildID string) {
 	bots, ok := gm.Bots[guildID]
 	if !ok {
