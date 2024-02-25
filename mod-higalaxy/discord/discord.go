@@ -80,7 +80,7 @@ func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	switch getCanonicalCommand(command, [][]string{
-		{"hi"},
+		{"hi", "howdy"},
 	}) {
 	case "hi":
 		d.handleHiCommand(s, m, parameter)
