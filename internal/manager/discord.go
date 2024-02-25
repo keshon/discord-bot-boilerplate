@@ -185,15 +185,19 @@ func (gm *GuildManager) removeBotInstance(guildID string) {
 	delete(gm.Bots, guildID)
 }
 
-// parseCommand parses the input based on the given pattern and returns the command and parameter.
+// parseCommand parses the input based on the provided pattern
 //
-// It takes two string parameters and returns two strings and an error.
+// input: the input string to be parsed
+// pattern: the pattern to match at the beginning of the input
+// string: the parsed command
+// string: the parsed parameter
+// error: an error if the pattern is not found or no command is found
 func parseCommand(input, pattern string) (string, string, error) {
 	input = strings.ToLower(input)
 	pattern = strings.ToLower(pattern)
 
 	if !strings.HasPrefix(input, pattern) {
-		return "", "", fmt.Errorf("pattern not found")
+		return "", "", nil // fmt.Errorf("pattern not found")
 	}
 
 	input = input[len(pattern):]

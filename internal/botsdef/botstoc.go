@@ -3,11 +3,12 @@ package botsdef
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
+	about "github.com/keshon/discord-bot-boilerplate/mod-about/discord"
 	helloWorld "github.com/keshon/discord-bot-boilerplate/mod-helloworld/discord"
 	hiGalaxy "github.com/keshon/discord-bot-boilerplate/mod-higalaxy/discord"
 )
 
-var Modules = []string{"hi", "hello"}
+var Modules = []string{"hi", "hello", "about"}
 
 // CreateBotInstance creates a new bot instance based on the module name.
 //
@@ -21,6 +22,8 @@ func CreateBotInstance(session *discordgo.Session, module string) Discord {
 		return hiGalaxy.NewDiscord(session)
 	case "hello":
 		return helloWorld.NewDiscord(session)
+	case "about":
+		return about.NewDiscord(session)
 
 	// ..add more cases for other modules if needed
 

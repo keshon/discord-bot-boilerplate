@@ -69,7 +69,6 @@ func (d *Discord) Stop() {
 //	s: the Discord session
 //	m: the incoming Discord message
 func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
-	slog.Warn(m.Message.Author.Username, ":", m.Message.Content)
 	if m.GuildID != d.GuildID || !d.IsInstanceActive {
 		return
 	}
@@ -99,7 +98,7 @@ func parseCommand(input, pattern string) (string, string, error) {
 	pattern = strings.ToLower(pattern)
 
 	if !strings.HasPrefix(input, pattern) {
-		return "", "", fmt.Errorf("pattern not found")
+		return "", "", nil // fmt.Errorf("pattern not found")
 	}
 
 	input = input[len(pattern):]

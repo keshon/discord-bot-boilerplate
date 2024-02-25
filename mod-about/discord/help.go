@@ -45,9 +45,9 @@ func (d *Discord) handleHelpCommand(s *discordgo.Session, m *discordgo.MessageCr
 		SetDescription("Some commands are aliased for shortness.\n").
 		AddField("", "**Demo**\n"+hello+hi).
 		AddField("", "").
-		AddField("", "**General**\n"+help+about).
+		AddField("", "**Information**\n"+help+about).
 		AddField("", "").
-		AddField("", "**Managing**\n"+register+unregister).
+		AddField("", "**Managing Bot**\n"+register+unregister).
 		SetThumbnail(avatarURL).
 		SetColor(0x9f00d4).
 		SetFooter(version.AppFullName).

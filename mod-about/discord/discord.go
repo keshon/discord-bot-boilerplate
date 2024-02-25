@@ -53,7 +53,7 @@ func loadConfig() *config.Config {
 //
 // guildID string
 func (d *Discord) Start(guildID string) {
-	slog.Info("Discord instance for mod-helloworld started for guild ID", guildID)
+	slog.Info("Discord instance for mod-about started for guild ID", guildID)
 	d.Session.AddHandler(d.Commands)
 	d.GuildID = guildID
 }
@@ -73,16 +73,19 @@ func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	command, parameter, err := parseCommand(m.Message.Content, d.CommandPrefix)
+	command, _, err := parseCommand(m.Message.Content, d.CommandPrefix)
 	if err != nil {
 		return
 	}
 
 	switch getCanonicalCommand(command, [][]string{
-		{"hello"},
+		{"help", "h"},
+		{"about", "a"},
 	}) {
-	case "hello":
-		d.handleHelloCommand(s, m, parameter)
+	case "help":
+		d.handleHelpCommand(s, m)
+	case "about":
+		d.handleAboutCommand(s, m)
 	}
 }
 

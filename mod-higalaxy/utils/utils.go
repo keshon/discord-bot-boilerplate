@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 // FormatDuration formats the given duration in seconds into a string in the format "hh:mm:ss".
@@ -182,4 +184,20 @@ func absDiffUint(x, y uint) uint {
 		return y - x
 	}
 	return x - y
+}
+
+// findUserVoiceState finds the voice state of the user in the given list of voice states.
+//
+// userID: The ID of the user to find the voice state for.
+// voiceStates: The list of voice states to search through.
+// *discordgo.VoiceState, bool: The found voice state and a boolean indicating if it was found.
+func findUserVoiceState(userID string, voiceStates []*discordgo.VoiceState) (foundState *discordgo.VoiceState, found bool) {
+	for _, state := range voiceStates {
+		if state != nil && state.UserID == userID {
+			foundState = state
+			found = true
+			return
+		}
+	}
+	return
 }
