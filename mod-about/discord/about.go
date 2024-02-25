@@ -37,7 +37,7 @@ func (d *Discord) handleAboutCommand(s *discordgo.Session, m *discordgo.MessageC
 	slog.Info(avatarURL)
 
 	title := fmt.Sprintf("ℹ️ %v — About", version.AppName)
-	content := fmt.Sprintf("**%v**\n\n%v", version.AppName, version.AppDescription)
+	content := fmt.Sprintf("**%v**\n\n%v", version.AppFullName, version.AppDescription)
 
 	buildDate := "unknown"
 	if version.BuildDate != "" {
