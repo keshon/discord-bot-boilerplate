@@ -53,7 +53,7 @@ func loadConfig() *config.Config {
 //
 // guildID string
 func (d *Discord) Start(guildID string) {
-	slog.Info("Discord instance for mod-helloworld started for guild ID", guildID)
+	slog.Info("Discord instance of mod-helloworld started for guild ID", guildID)
 	d.Session.AddHandler(d.Commands)
 	d.GuildID = guildID
 }

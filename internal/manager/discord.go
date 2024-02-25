@@ -39,7 +39,7 @@ func NewGuildManager(session *discordgo.Session, bots map[string]map[string]bots
 
 // Start starts the GuildManager.
 func (gm *GuildManager) Start() {
-	slog.Info("Discord instance for guild manager started")
+	slog.Info("Discord instance of guild manager started")
 	gm.Session.AddHandler(gm.Commands)
 }
 
