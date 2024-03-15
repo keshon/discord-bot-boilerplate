@@ -9,7 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/slog"
-	"github.com/keshon/discord-bot-boilerplate/internal/botsdef"
+	"github.com/keshon/discord-bot-template/internal/botsdef"
 )
 
 type Rest struct {

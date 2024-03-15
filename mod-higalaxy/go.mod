@@ -1,4 +1,4 @@
-module github.com/keshon/discord-bot-boilerplate/mod-higalaxy
+module github.com/keshon/discord-bot-template/mod-higalaxy
 
 go 1.21.1
 

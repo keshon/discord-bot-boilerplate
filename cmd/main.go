@@ -11,12 +11,12 @@ import (
 	"github.com/gookit/slog"
 	"github.com/gookit/slog/handler"
 
-	"github.com/keshon/discord-bot-boilerplate/internal/botsdef"
-	"github.com/keshon/discord-bot-boilerplate/internal/config"
-	"github.com/keshon/discord-bot-boilerplate/internal/db"
-	"github.com/keshon/discord-bot-boilerplate/internal/manager"
-	"github.com/keshon/discord-bot-boilerplate/internal/rest"
-	"github.com/keshon/discord-bot-boilerplate/internal/version"
+	"github.com/keshon/discord-bot-template/internal/botsdef"
+	"github.com/keshon/discord-bot-template/internal/config"
+	"github.com/keshon/discord-bot-template/internal/db"
+	"github.com/keshon/discord-bot-template/internal/manager"
+	"github.com/keshon/discord-bot-template/internal/rest"
+	"github.com/keshon/discord-bot-template/internal/version"
 )
 
 // main is the entry point of the program.

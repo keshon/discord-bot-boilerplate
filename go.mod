@@ -1,4 +1,4 @@
-module github.com/keshon/discord-bot-boilerplate
+module github.com/keshon/discord-bot-template
 
 go 1.21
 

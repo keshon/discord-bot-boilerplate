@@ -3,9 +3,9 @@ package botsdef
 import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
-	about "github.com/keshon/discord-bot-boilerplate/mod-about/discord"
-	helloWorld "github.com/keshon/discord-bot-boilerplate/mod-helloworld/discord"
-	hiGalaxy "github.com/keshon/discord-bot-boilerplate/mod-higalaxy/discord"
+	about "github.com/keshon/discord-bot-template/mod-about/discord"
+	helloWorld "github.com/keshon/discord-bot-template/mod-helloworld/discord"
+	hiGalaxy "github.com/keshon/discord-bot-template/mod-higalaxy/discord"
 )
 
 var Modules = []string{"hi", "hello", "about"}

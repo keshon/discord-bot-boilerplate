@@ -7,9 +7,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
 
-	"github.com/keshon/discord-bot-boilerplate/internal/botsdef"
-	"github.com/keshon/discord-bot-boilerplate/internal/config"
-	"github.com/keshon/discord-bot-boilerplate/internal/db"
+	"github.com/keshon/discord-bot-template/internal/botsdef"
+	"github.com/keshon/discord-bot-template/internal/config"
+	"github.com/keshon/discord-bot-template/internal/db"
 )
 
 type GuildManager struct {

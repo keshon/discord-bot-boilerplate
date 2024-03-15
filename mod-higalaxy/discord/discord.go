@@ -7,8 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
-	"github.com/keshon/discord-bot-boilerplate/internal/config"
-	"github.com/keshon/discord-bot-boilerplate/mod-higalaxy/utils"
+	"github.com/keshon/discord-bot-template/internal/config"
+	"github.com/keshon/discord-bot-template/mod-higalaxy/utils"
 )
 
 type Discord struct {

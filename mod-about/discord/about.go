@@ -10,9 +10,9 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
 
-	"github.com/keshon/discord-bot-boilerplate/internal/config"
-	"github.com/keshon/discord-bot-boilerplate/internal/version"
-	"github.com/keshon/discord-bot-boilerplate/mod-helloworld/utils"
+	"github.com/keshon/discord-bot-template/internal/config"
+	"github.com/keshon/discord-bot-template/internal/version"
+	"github.com/keshon/discord-bot-template/mod-helloworld/utils"
 )
 
 // handleAboutCommand is a function to handle the about command in Discord.

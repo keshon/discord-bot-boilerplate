@@ -1,4 +1,4 @@
-module github.com/keshon/discord-bot-boilerplate/mod-about
+module github.com/keshon/discord-bot-template/mod-about
 
 go 1.21.1
 

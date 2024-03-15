@@ -7,8 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/slog"
-	"github.com/keshon/discord-bot-boilerplate/internal/config"
-	"github.com/keshon/discord-bot-boilerplate/mod-helloworld/utils"
+	"github.com/keshon/discord-bot-template/internal/config"
+	"github.com/keshon/discord-bot-template/mod-helloworld/utils"
 )
 
 type Discord struct {
@@ -37,10 +37,6 @@ func NewDiscord(session *discordgo.Session) *Discord {
 	}
 }
 
-// loadConfig loads the configuration and returns a pointer to config.Config.
-//
-// No parameters.
-// Returns a pointer to config.Config.
 func loadConfig() *config.Config {
 	cfg, err := config.NewConfig()
 	if err != nil {
@@ -49,9 +45,6 @@ func loadConfig() *config.Config {
 	return cfg
 }
 
-// Start starts the Discord instance for the specified guild ID.
-//
-// guildID string
 func (d *Discord) Start(guildID string) {
 	slog.Info("Discord instance of mod-about started for guild ID", guildID)
 	d.Session.AddHandler(d.Commands)
@@ -62,12 +55,6 @@ func (d *Discord) Stop() {
 	d.IsInstanceActive = false
 }
 
-// Commands handles the incoming Discord commands.
-//
-// Parameters:
-//
-//	s: the Discord session
-//	m: the incoming Discord message
 func (d *Discord) Commands(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.GuildID != d.GuildID || !d.IsInstanceActive {
 		return
