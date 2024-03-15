@@ -1,6 +1,6 @@
 # Discord Bot Template
 
-This is a basic boilerplate that I use as a starting point for my Discord bot projects. It was derived from the [Melodix Player](https://github.com/keshon/discord-bot-template) project.
+This is a basic boilerplate that I use as a starting point for my Discord bot projects. It was derived from the [Melodix Player](https://github.com/keshon/melodix-player) project.
 
 ## Getting Started
 
