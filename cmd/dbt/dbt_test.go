@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/keshon/discord-bot-boilerplate/internal/config"
+	"github.com/keshon/discord-bot-template/internal/config"
 )
 
 func TestStartRestServer(t *testing.T) {
