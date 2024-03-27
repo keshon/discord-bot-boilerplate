@@ -74,8 +74,6 @@ github.com/jonas747/ogg v0.0.0-20161220051205-b4f6f4cf3757 h1:Kyv+zTfWIGRNaz/4+l
 github.com/jonas747/ogg v0.0.0-20161220051205-b4f6f4cf3757/go.mod h1:cZnNmdLiLpihzgIVqiaQppi9Ts3D4qF/M45//yW35nI=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
-github.com/keshon/melodix-discord-player/music v0.0.0-20231212050011-2817e553bee7 h1:4tqJKsLXFJQkIHi8hwjRwHymQOKwul1YIEDEG8QyDpA=
-github.com/keshon/melodix-discord-player/music v0.0.0-20231212050011-2817e553bee7/go.mod h1:rmrNJO/J2OGmF+HNmrpZTjVH359Gam1EXhRJLI0VQvE=
 github.com/kkdai/youtube/v2 v2.9.0 h1:J7BvfIsxEyyd1MmB/75LgDvG8BGGsG9bSHpbo/qIb+8=
 github.com/kkdai/youtube/v2 v2.9.0/go.mod h1:H0ntZBgaah4F0wxnEUkLa6yUeyTDDg06xFJ3tvA6gOw=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
